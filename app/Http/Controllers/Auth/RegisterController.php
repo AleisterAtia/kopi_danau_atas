@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -30,8 +31,10 @@ class RegisterController extends Controller
             'role' => 'user',
         ]);
 
+        event(new Registered($user));
+
         Auth::login($user);
 
-        return redirect('/')->with('success', __('Akun berhasil dibuat! Selamat datang.'));
+        return redirect()->route('verification.notice');
     }
 }
