@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Payment extends Model
+{
+    protected $fillable = [
+        'booking_id',
+        'midtrans_order_id',
+        'midtrans_transaction_id',
+        'snap_token',
+        'payment_type',
+        'status',
+        'gross_amount',
+        'midtrans_response',
+        'paid_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'gross_amount' => 'decimal:2',
+            'midtrans_response' => 'array',
+            'paid_at' => 'datetime',
+        ];
+    }
+
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
+    }
+}
