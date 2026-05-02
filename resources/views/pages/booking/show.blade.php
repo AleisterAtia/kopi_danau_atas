@@ -14,6 +14,8 @@
             <div class="mt-4 sm:mt-0">
                 @if($booking->status == 'pending')
                     <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">{{ __('Menunggu Pembayaran') }}</span>
+                @elseif($booking->status == 'paid')
+                    <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800">{{ __('Lunas') }}</span>
                 @elseif($booking->status == 'confirmed')
                     <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">{{ __('Terkonfirmasi') }}</span>
                 @elseif($booking->status == 'completed')
@@ -35,14 +37,23 @@
         @endif
 
         @if($booking->status == 'pending')
-        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between shadow-sm">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between shadow-sm gap-4">
             <div class="mb-4 sm:mb-0">
                 <h3 class="text-lg font-bold text-yellow-800 mb-1">{{ __('Menunggu Pembayaran') }}</h3>
                 <p class="text-sm text-yellow-700">{{ __('Silakan selesaikan pembayaran Anda untuk mengamankan kuota kunjungan.') }}</p>
             </div>
-            <a href="{{ route('payment.checkout', $booking) }}" class="btn-primary whitespace-nowrap bg-yellow-600 hover:bg-yellow-700 w-full sm:w-auto text-center justify-center">
-                {{ __('Bayar Sekarang') }}
-            </a>
+            <div class="flex gap-3 w-full sm:w-auto">
+                <form method="POST" action="{{ route('payment.update-status', $booking) }}" class="w-full sm:w-auto">
+                    @csrf
+                    <button type="submit" class="btn btn-outline !border-yellow-400 !text-yellow-800 hover:!bg-yellow-100 whitespace-nowrap w-full sm:w-auto justify-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        {{ __('Cek Status') }}
+                    </button>
+                </form>
+                <a href="{{ route('payment.checkout', $booking) }}" class="btn-primary whitespace-nowrap w-full sm:w-auto text-center justify-center">
+                    {{ __('Bayar Sekarang') }}
+                </a>
+            </div>
         </div>
         @endif
 
