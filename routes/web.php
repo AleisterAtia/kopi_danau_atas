@@ -10,8 +10,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,9 +40,33 @@ Route::middleware('guest')->group(function () {
     Route::post('/masuk', [LoginController::class, 'login']);
     Route::get('/daftar', [RegisterController::class, 'showForm'])->name('register');
     Route::post('/daftar', [RegisterController::class, 'register']);
+
+    // Google Login Routes
+    Route::get('/auth/google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Email Verification Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/email/verify', function () {
+    return view('pages.auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/')->with('success', __('Email Anda berhasil diverifikasi.'));
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', __('Link verifikasi telah dikirim ulang!'));
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +74,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Booking
     Route::get('/booking', [BookingController::class, 'myBookings'])->name('booking.index');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
