@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Payment
     Route::get('/booking/{booking}/bayar', [PaymentController::class, 'checkout'])->name('payment.checkout');
     Route::post('/booking/{booking}/pay', [PaymentController::class, 'createSnapToken'])->name('payment.snap');
+    Route::post('/booking/{booking}/update-status', [PaymentController::class, 'updateStatus'])->name('payment.update-status');
 
     // Review
     Route::post('/booking/{booking}/review', [ReviewController::class, 'store'])->name('review.store');

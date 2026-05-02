@@ -82,7 +82,6 @@
             pay() {
                 this.loading = true;
                 
-                // Get snap token from backend
                 fetch('{{ route("payment.snap", $booking) }}', {
                     method: 'POST',
                     headers: {
@@ -96,10 +95,27 @@
                     if(data.snap_token) {
                         window.snap.pay(data.snap_token, {
                             onSuccess: function(result){
-                                window.location.href = '{{ route("booking.show", $booking) }}';
+                                // Sync status with Midtrans API before redirecting
+                                fetch('{{ route("payment.update-status", $booking) }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                }).finally(() => {
+                                    window.location.href = '{{ route("booking.show", $booking) }}';
+                                });
                             },
                             onPending: function(result){
-                                window.location.href = '{{ route("booking.show", $booking) }}';
+                                fetch('{{ route("payment.update-status", $booking) }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                }).finally(() => {
+                                    window.location.href = '{{ route("booking.show", $booking) }}';
+                                });
                             },
                             onError: function(result){
                                 alert('Pembayaran gagal!');
