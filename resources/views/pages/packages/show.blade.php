@@ -123,9 +123,9 @@
                                 <div class="flex items-start justify-between mb-2">
                                     <div class="flex items-center">
                                         @if($review->user->avatar)
-                                            <img src="{{ Storage::url($review->user->avatar) }}" class="w-10 h-10 rounded-full object-cover mr-3">
+                                            <img src="{{ str_starts_with($review->user->avatar, 'http') ? $review->user->avatar : Storage::url($review->user->avatar) }}" class="w-10 h-10 rounded-full object-cover mr-3">
                                         @else
-                                            <div class="w-10 h-10 rounded-full bg-primary-light text-white flex items-center justify-center font-bold mr-3">
+                                            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold mr-3">
                                                 {{ substr($review->user->name, 0, 1) }}
                                             </div>
                                         @endif
