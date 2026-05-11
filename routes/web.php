@@ -6,6 +6,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Auth\LoginController;
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/booking', [BookingController::class, 'myBookings'])->name('booking.index');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/{booking}', [BookingController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{booking}/invoice', [InvoiceController::class, 'download'])->name('booking.invoice');
 
     // Payment
     Route::get('/booking/{booking}/bayar', [PaymentController::class, 'checkout'])->name('payment.checkout');
