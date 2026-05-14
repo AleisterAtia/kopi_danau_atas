@@ -55,6 +55,11 @@ class GoogleController extends Controller
             // Log the user in
             Auth::login($user);
 
+            // Admin diarahkan ke panel Filament
+            if ($user->isAdmin()) {
+                return redirect()->intended('/admin');
+            }
+
             // Redirect to intended page or home
             return redirect()->intended(route('home'));
             

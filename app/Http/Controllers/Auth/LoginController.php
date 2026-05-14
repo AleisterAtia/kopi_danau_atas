@@ -22,6 +22,12 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
+            // Admin diarahkan ke panel Filament
+            if (Auth::user()->isAdmin()) {
+                return redirect()->intended('/admin');
+            }
+
             return redirect()->intended('/')->with('success', __('Selamat datang kembali!'));
         }
 
