@@ -2,6 +2,10 @@
 
 @section('title', __('Verifikasi Email'))
 
+@push('head')
+    @include('partials.navbar-light-override')
+@endpush
+
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-bg-warm py-24 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full">
