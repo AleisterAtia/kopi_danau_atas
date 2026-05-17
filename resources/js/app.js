@@ -35,24 +35,60 @@ function initTestimonialCarousel() {
     if (!container) return;
 
     const items = container.querySelectorAll('.testimonial-item');
+    if (items.length === 0) return;
+
     const counter = document.getElementById('testimonial-counter');
     let current = 0;
+    let timer = null;
 
+    // Keep all items visible in the DOM but stack them; toggle only via
+    // opacity + pointer-events so the CSS transition (`transition-opacity`)
+    // can play smoothly. `display:none` would short-circuit the transition.
     function show(index) {
         items.forEach((item, i) => {
-            item.style.display = i === index ? 'block' : 'none';
-            item.style.opacity = i === index ? '1' : '0';
+            const active = i === index;
+            item.style.opacity = active ? '1' : '0';
+            item.style.pointerEvents = active ? 'auto' : 'none';
+            item.style.zIndex = active ? '1' : '0';
         });
         if (counter) counter.textContent = `${index + 1} / ${items.length}`;
     }
 
-    window.nextTestimonial = () => { current = (current + 1) % items.length; show(current); };
-    window.prevTestimonial = () => { current = (current - 1 + items.length) % items.length; show(current); };
+    // Always normalize initial state (Blade ships item 0 as visible, but other
+    // items have inline display:none — clear it so opacity transitions can run).
+    items.forEach((item) => {
+        item.style.display = 'block';
+    });
 
     show(0);
 
-    // Auto advance every 6 seconds
-    setInterval(() => { window.nextTestimonial(); }, 6000);
+    // Single-item carousel: no nav, no autoplay needed.
+    if (items.length <= 1) return;
+
+    window.nextTestimonial = () => {
+        current = (current + 1) % items.length;
+        show(current);
+    };
+    window.prevTestimonial = () => {
+        current = (current - 1 + items.length) % items.length;
+        show(current);
+    };
+
+    const startAuto = () => {
+        timer = setInterval(() => window.nextTestimonial(), 6000);
+    };
+    const stopAuto = () => {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+    };
+
+    startAuto();
+
+    // Pause auto-advance while the user hovers the carousel.
+    container.addEventListener('mouseenter', stopAuto);
+    container.addEventListener('mouseleave', startAuto);
 }
 
 document.addEventListener('DOMContentLoaded', initTestimonialCarousel);

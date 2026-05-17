@@ -36,6 +36,29 @@
             </div>
         @endif
 
+        {{-- E-Ticket QR Code (paid/confirmed/completed) --}}
+        @if(in_array($booking->status, ['paid', 'confirmed', 'completed']) && $booking->qr_code_path)
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 md:p-8">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="flex-shrink-0 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <img src="{{ Storage::url($booking->qr_code_path) }}" alt="E-Ticket QR" class="w-48 h-48 object-contain">
+                    </div>
+                    <div class="flex-1 text-center md:text-left">
+                        <span class="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider rounded-full mb-3">
+                            {{ __('E-Tiket Aktif') }}
+                        </span>
+                        <h2 class="text-2xl font-bold font-heading text-gray-900 mb-2">{{ __('Tunjukkan QR ini saat tiba') }}</h2>
+                        <p class="text-gray-600 text-sm mb-4">{{ __('Petugas kami akan memindai kode ini untuk memverifikasi pesanan Anda.') }}</p>
+                        <div class="inline-block bg-gray-900 text-white font-mono text-sm px-4 py-2 rounded-lg tracking-wider">
+                            {{ $booking->booking_code }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         @if($booking->status == 'pending')
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between shadow-sm gap-4">
             <div class="mb-4 sm:mb-0">
@@ -53,6 +76,41 @@
                 <a href="{{ route('payment.checkout', $booking) }}" class="btn-primary whitespace-nowrap w-full sm:w-auto text-center justify-center">
                     {{ __('Bayar Sekarang') }}
                 </a>
+            </div>
+        </div>
+        @endif
+
+        {{-- Guest Info Card --}}
+        @if($booking->guest_name || $booking->guest_phone || $booking->guest_email || $booking->notes)
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 md:p-8">
+                <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-gray-100 pb-2">{{ __('Data Pemesan') }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    @if($booking->guest_name)
+                    <div>
+                        <span class="block text-xs text-gray-500 uppercase mb-1">{{ __('Nama Lengkap') }}</span>
+                        <span class="font-medium text-gray-900">{{ $booking->guest_name }}</span>
+                    </div>
+                    @endif
+                    @if($booking->guest_email)
+                    <div>
+                        <span class="block text-xs text-gray-500 uppercase mb-1">{{ __('Alamat Email') }}</span>
+                        <span class="font-medium text-gray-900 break-all">{{ $booking->guest_email }}</span>
+                    </div>
+                    @endif
+                    @if($booking->guest_phone)
+                    <div>
+                        <span class="block text-xs text-gray-500 uppercase mb-1">{{ __('No. WhatsApp') }}</span>
+                        <span class="font-medium text-gray-900">{{ $booking->guest_phone }}</span>
+                    </div>
+                    @endif
+                    @if($booking->notes)
+                    <div class="md:col-span-2">
+                        <span class="block text-xs text-gray-500 uppercase mb-1">{{ __('Catatan Khusus') }}</span>
+                        <p class="text-gray-700 bg-gray-50 p-3 rounded-lg whitespace-pre-line">{{ $booking->notes }}</p>
+                    </div>
+                    @endif
+                </div>
             </div>
         </div>
         @endif

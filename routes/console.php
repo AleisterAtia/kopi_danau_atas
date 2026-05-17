@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Auto-expire pending bookings every 15 minutes
 Schedule::command('bookings:expire-pending')->everyFifteenMinutes();
+
+// Auto-complete bookings whose visit_date has passed (daily at 23:55)
+Schedule::command('bookings:auto-complete')->dailyAt('23:55');

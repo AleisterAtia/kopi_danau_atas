@@ -174,7 +174,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('booking.store') }}" method="POST">
+                    <form action="{{ route('booking.create') }}" method="POST">
                         @csrf
                         <input type="hidden" name="tour_package_id" value="{{ $package->id }}">
 
@@ -214,8 +214,11 @@
                         @auth
                             <button type="submit" class="w-full btn-primary justify-center text-lg" :disabled="!visitDate || available < 1 || guestCount < 1 || checking" :class="{'opacity-50 cursor-not-allowed': !visitDate || available < 1 || guestCount < 1 || checking}">
                                 <span x-show="available < 1 && visitDate && !checking">{{ __('Kuota Penuh') }}</span>
-                                <span x-show="available >= 1 || !visitDate">{{ __('Pesan Sekarang') }}</span>
+                                <span x-show="available >= 1 || !visitDate">{{ __('Lanjutkan') }}</span>
                             </button>
+                            <p class="text-xs text-center text-gray-500 mt-3">
+                                {{ __('Selanjutnya Anda akan diminta melengkapi data pemesan.') }}
+                            </p>
                         @else
                             <a href="{{ route('login') }}" class="w-full btn-primary justify-center text-lg text-center">
                                 {{ __('Masuk untuk Memesan') }}
