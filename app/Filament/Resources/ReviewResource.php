@@ -9,8 +9,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Cache;
 
 class ReviewResource extends Resource
 {
@@ -19,6 +17,13 @@ class ReviewResource extends Resource
     protected static ?string $navigationGroup = 'Tourism';
     protected static ?int $navigationSort = 3;
 
+    /**
+     * Reviews are published immediately when submitted by users to keep the
+     * platform transparent — admins cannot hide low ratings. The form below
+     * is read-only and exists only so admins can inspect a review's content.
+     * The `status` column is intentionally omitted from the UI; it remains
+     * in the database (always 'approved') for backward compatibility.
+     */
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -36,13 +41,6 @@ class ReviewResource extends Resource
                         ->disabled()
                         ->rows(4)
                         ->columnSpanFull(),
-                    Forms\Components\Select::make('status')
-                        ->options([
-                            'pending' => 'Pending',
-                            'approved' => 'Approved',
-                            'rejected' => 'Rejected',
-                        ])
-                        ->required(),
                 ])->columns(2),
         ]);
     }
@@ -70,48 +68,18 @@ class ReviewResource extends Resource
                     ->limit(50)
                     ->wrap(),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'approved',
-                        'danger' => 'rejected',
-                    ]),
-
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                    ]),
-            ])
             ->actions([
-                Tables\Actions\Action::make('approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (Review $record) => $record->status !== 'approved')
-                    ->action(function (Review $record) {
-                        $record->update(['status' => 'approved']);
-                        Notification::make()->title('Review approved')->success()->send();
-                    }),
-
-                Tables\Actions\Action::make('reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->visible(fn (Review $record) => $record->status !== 'rejected')
-                    ->action(function (Review $record) {
-                        $record->update(['status' => 'rejected']);
-                        Notification::make()->title('Review rejected')->warning()->send();
-                    }),
-
+                // View-only edit action (form fields are disabled). Delete is
+                // intentionally retained so admins can remove spam or
+                // offensive content (e.g., hate speech), but it is the only
+                // intervention available — no approve/reject moderation.
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -129,21 +97,5 @@ class ReviewResource extends Resource
             'index' => Pages\ListReviews::route('/'),
             'edit' => Pages\EditReview::route('/{record}/edit'),
         ];
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        $count = Cache::remember(
-            'admin.badge.reviews.pending',
-            30,
-            fn () => static::getModel()::where('status', 'pending')->count()
-        );
-
-        return $count ?: null;
-    }
-
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return 'warning';
     }
 }

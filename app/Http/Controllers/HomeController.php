@@ -22,8 +22,8 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-        $approvedReviews = Review::where('status', 'approved')
-            ->with(['user', 'tourPackage'])
+        // Reviews are auto-published, so no status filter is needed.
+        $approvedReviews = Review::with(['user', 'tourPackage'])
             ->latest()
             ->take(6)
             ->get();

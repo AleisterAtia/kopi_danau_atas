@@ -32,7 +32,7 @@ class StatsOverviewWidget extends BaseWidget
                     ->whereYear('paid_at', now()->year)
                     ->sum('gross_amount'),
                 'totalUsers' => User::where('role', 'user')->count(),
-                'pendingReviews' => Review::where('status', 'pending')->count(),
+                'totalReviews' => Review::count(),
             ];
         });
 
@@ -55,10 +55,12 @@ class StatsOverviewWidget extends BaseWidget
                 ->color('info')
                 ->icon('heroicon-o-users'),
 
-            Stat::make('Pending Reviews', $data['pendingReviews'])
-                ->description('Awaiting moderation')
+            // Reviews are auto-published (no moderation queue), so we surface
+            // the total count instead of a "pending" backlog.
+            Stat::make('Total Reviews', $data['totalReviews'])
+                ->description('Published by tourists')
                 ->descriptionIcon('heroicon-m-chat-bubble-left-ellipsis')
-                ->color($data['pendingReviews'] > 0 ? 'warning' : 'success')
+                ->color('success')
                 ->icon('heroicon-o-star'),
         ];
     }
