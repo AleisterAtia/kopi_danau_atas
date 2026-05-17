@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
 
 class ReviewResource extends Resource
 {
@@ -132,7 +133,13 @@ class ReviewResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count() ?: null;
+        $count = Cache::remember(
+            'admin.badge.reviews.pending',
+            30,
+            fn () => static::getModel()::where('status', 'pending')->count()
+        );
+
+        return $count ?: null;
     }
 
     public static function getNavigationBadgeColor(): ?string

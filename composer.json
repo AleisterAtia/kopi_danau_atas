@@ -54,9 +54,23 @@
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
         ],
+        "optimize": [
+            "@php artisan view:cache --ansi",
+            "@php artisan event:cache --ansi",
+            "@php artisan icons:cache --ansi",
+            "@php artisan filament:optimize --ansi"
+        ],
+        "optimize:clear": [
+            "@php artisan view:clear --ansi",
+            "@php artisan event:clear --ansi",
+            "@php artisan icons:clear --ansi",
+            "@php artisan filament:optimize-clear --ansi",
+            "@php artisan cache:clear --ansi"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
+
             "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [

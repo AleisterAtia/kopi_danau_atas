@@ -16,6 +16,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class BookingResource extends Resource
@@ -268,7 +269,16 @@ class BookingResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'paid')->count() ?: null;
+        // Short TTL cache: navigation badges are evaluated on every admin
+        // page load. Hitting the DB each time adds noticeable latency on
+        // pages with multiple badged resources.
+        $count = Cache::remember(
+            'admin.badge.bookings.paid',
+            30,
+            fn () => static::getModel()::where('status', 'paid')->count()
+        );
+
+        return $count ?: null;
     }
 
     public static function getNavigationBadgeColor(): ?string
