@@ -96,10 +96,13 @@ class TourPackage extends Model
     }
 
     /**
-     * Get average rating from approved reviews.
+     * Get average rating from all reviews.
+     *
+     * Reviews are auto-published when submitted (no moderation queue), so
+     * every review contributes to the average.
      */
     public function getAverageRatingAttribute(): float
     {
-        return round($this->reviews()->where('status', 'approved')->avg('rating') ?? 0, 1);
+        return round($this->reviews()->avg('rating') ?? 0, 1);
     }
 }

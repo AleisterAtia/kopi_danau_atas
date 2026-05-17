@@ -25,9 +25,9 @@ class ReviewController extends Controller
             'booking_id' => $booking->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'status' => 'pending',
+            'status' => 'approved',
         ]);
 
-        return back()->with('success', __('Ulasan berhasil dikirim! Menunggu moderasi admin.'));
+        return back()->with('success', __('Ulasan berhasil dikirim! Terima kasih atas masukan Anda.'));
     }
 }
