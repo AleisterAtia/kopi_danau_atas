@@ -60,7 +60,7 @@
                 </div>
 
                 <div class="text-sm">
-                    <a href="#" class="font-medium text-accent hover:text-accent-light">
+                    <a href="{{ route('password.request') }}" class="font-medium text-accent hover:text-accent-light">
                         {{ __('Lupa kata sandi?') }}
                     </a>
                 </div>

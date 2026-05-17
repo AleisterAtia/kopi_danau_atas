@@ -242,7 +242,7 @@
             <div class="lg:col-span-3">
                 <div id="testimonial-carousel" class="relative min-h-[260px]">
                     @foreach($approvedReviews as $index => $review)
-                    <div class="testimonial-item absolute inset-0 transition-opacity duration-500" style="display:{{ $index === 0 ? 'block' : 'none' }};opacity:{{ $index === 0 ? '1' : '0' }};">
+                    <div class="testimonial-item absolute inset-0 transition-opacity duration-500" style="opacity:{{ $index === 0 ? '1' : '0' }};pointer-events:{{ $index === 0 ? 'auto' : 'none' }};">
                         <div class="bg-[#F8F9FA] rounded-2xl p-8 lg:p-10">
                             {{-- Stars --}}
                             <div class="flex gap-0.5 mb-5">

@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -33,9 +36,9 @@ class MidtransService
                 'gross_amount' => (int) $booking->total_price,
             ],
             'customer_details' => [
-                'first_name' => $booking->user->name,
-                'email' => $booking->user->email,
-                'phone' => $booking->user->phone ?? '',
+                'first_name' => $booking->guest_name ?? $booking->user->name,
+                'email' => $booking->guest_email ?? $booking->user->email,
+                'phone' => $booking->guest_phone ?? $booking->user->phone ?? '',
             ],
             'item_details' => [
                 [
@@ -103,8 +106,16 @@ class MidtransService
         switch ($transactionStatus) {
             case 'capture':
             case 'settlement':
-                $payment->update(['status' => 'settlement', 'paid_at' => now()]);
+                // Idempotency: only fire post-payment side-effects (QR + email)
+                // when this booking transitions INTO paid for the first time.
+                $wasAlreadyPaid = in_array($payment->booking->status, ['paid', 'confirmed', 'completed']);
+
+                $payment->update(['status' => 'settlement', 'paid_at' => $payment->paid_at ?? now()]);
                 $payment->booking->update(['status' => 'paid']);
+
+                if (! $wasAlreadyPaid) {
+                    $this->finalizePaidBooking($payment->booking->fresh());
+                }
                 break;
 
             case 'expire':
@@ -127,6 +138,35 @@ class MidtransService
                 $payment->update(['status' => 'refund']);
                 $payment->booking->update(['status' => 'cancelled']);
                 break;
+        }
+    }
+
+    /**
+     * Run side-effects that should happen exactly once when a booking
+     * transitions to paid: generate QR code + send confirmation email.
+     *
+     * Errors are logged but never thrown — we don't want a flaky SMTP
+     * server to mark the webhook handler as failed (which would cause
+     * Midtrans to retry and double-update the booking).
+     */
+    protected function finalizePaidBooking(Booking $booking): void
+    {
+        try {
+            $qrPath = app(QrCodeService::class)->generate($booking);
+            $booking->update(['qr_code_path' => $qrPath]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to generate QR code for booking ' . $booking->booking_code, [
+                'exception' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            Mail::to($booking->guest_email ?? $booking->user->email)
+                ->queue(new BookingConfirmation($booking->fresh(), app()->getLocale()));
+        } catch (\Throwable $e) {
+            Log::error('Failed to queue booking confirmation email for ' . $booking->booking_code, [
+                'exception' => $e->getMessage(),
+            ]);
         }
     }
 }

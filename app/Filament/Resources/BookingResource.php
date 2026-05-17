@@ -3,14 +3,20 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\BookingResource\Pages;
+use App\Mail\BookingConfirmation;
 use App\Models\Booking;
+use App\Services\QrCodeService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 
 class BookingResource extends Resource
 {
@@ -58,6 +64,26 @@ class BookingResource extends Resource
                         ])
                         ->required(),
                 ])->columns(2),
+
+            Forms\Components\Section::make('Guest Contact')
+                ->description('Detail data pemesan yang diisi saat checkout')
+                ->schema([
+                    Forms\Components\TextInput::make('guest_name')
+                        ->label('Nama Pemesan')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('guest_phone')
+                        ->label('No. WhatsApp')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('guest_email')
+                        ->label('Email')
+                        ->disabled()
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('notes')
+                        ->label('Catatan Khusus')
+                        ->disabled()
+                        ->rows(3)
+                        ->columnSpanFull(),
+                ])->columns(2)->collapsible(),
         ]);
     }
 
@@ -71,22 +97,30 @@ class BookingResource extends Resource
                     ->sortable()
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Guest')
+                Tables\Columns\TextColumn::make('guest_name')
+                    ->label('Pemesan')
                     ->searchable()
-                    ->sortable(),
+                    ->description(fn (Booking $record): ?string => $record->guest_phone)
+                    ->placeholder('—'),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Akun')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('tourPackage.name')
                     ->label('Package')
                     ->sortable()
-                    ->limit(30),
+                    ->limit(30)
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('visit_date')
-                    ->date()
+                    ->date('d M Y')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('guest_count')
-                    ->label('Guests')
+                    ->label('Pax')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('total_price')
@@ -103,7 +137,8 @@ class BookingResource extends Resource
                     ]),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dipesan')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -120,7 +155,30 @@ class BookingResource extends Resource
                     ]),
                 SelectFilter::make('tour_package_id')
                     ->relationship('tourPackage', 'name')
-                    ->label('Package'),
+                    ->label('Package')
+                    ->searchable()
+                    ->preload(),
+
+                Filter::make('visit_date')
+                    ->form([
+                        DatePicker::make('visit_from')->label('Visit Date From'),
+                        DatePicker::make('visit_until')->label('Visit Date Until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['visit_from'] ?? null, fn ($q, $date) => $q->whereDate('visit_date', '>=', $date))
+                            ->when($data['visit_until'] ?? null, fn ($q, $date) => $q->whereDate('visit_date', '<=', $date));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['visit_from'] ?? null) {
+                            $indicators[] = 'Dari ' . \Carbon\Carbon::parse($data['visit_from'])->format('d M Y');
+                        }
+                        if ($data['visit_until'] ?? null) {
+                            $indicators[] = 'Sampai ' . \Carbon\Carbon::parse($data['visit_until'])->format('d M Y');
+                        }
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('confirm')
@@ -154,6 +212,40 @@ class BookingResource extends Resource
                     ->action(function (Booking $record) {
                         $record->update(['status' => 'cancelled']);
                         Notification::make()->title('Booking cancelled')->warning()->send();
+                    }),
+
+                Tables\Actions\Action::make('resendEticket')
+                    ->label('Resend E-ticket')
+                    ->icon('heroicon-o-envelope')
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalHeading('Kirim ulang e-tiket')
+                    ->modalDescription('Email konfirmasi & e-tiket akan dikirim ulang ke alamat email pemesan.')
+                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed', 'completed']))
+                    ->action(function (Booking $record) {
+                        try {
+                            // Pastikan QR sudah ada (regenerate jika tidak ada)
+                            if (! $record->qr_code_path) {
+                                $qrPath = app(QrCodeService::class)->generate($record);
+                                $record->update(['qr_code_path' => $qrPath]);
+                                $record->refresh();
+                            }
+
+                            Mail::to($record->guest_email ?? $record->user->email)
+                                ->queue(new BookingConfirmation($record, app()->getLocale()));
+
+                            Notification::make()
+                                ->title('E-tiket masuk antrian email')
+                                ->body('Email akan terkirim setelah queue worker memproses.')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->title('Gagal mengirim e-tiket')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
 
                 Tables\Actions\ViewAction::make(),

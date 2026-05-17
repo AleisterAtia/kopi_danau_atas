@@ -268,6 +268,61 @@
             display: table;
             clear: both;
         }
+
+        /* E-Ticket QR */
+        .eticket-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0fdf4;
+            border: 1px dashed #86efac;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .eticket-left {
+            float: left;
+            width: 35%;
+            text-align: center;
+        }
+
+        .eticket-right {
+            float: right;
+            width: 60%;
+        }
+
+        .eticket-qr {
+            width: 140px;
+            height: 140px;
+        }
+
+        .eticket-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #166534;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .eticket-code {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f2937;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid #d1fae5;
+            margin-top: 8px;
+        }
+
+        .eticket-instruction {
+            font-size: 11px;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -358,6 +413,22 @@
             <td class="value">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
         </tr>
     </table>
+
+    {{-- E-TICKET QR --}}
+    @if($booking->qr_code_path && file_exists(storage_path('app/public/' . $booking->qr_code_path)))
+    <div class="eticket-section clearfix">
+        <div class="eticket-left">
+            <img src="{{ storage_path('app/public/' . $booking->qr_code_path) }}" alt="QR" class="eticket-qr">
+        </div>
+        <div class="eticket-right">
+            <div class="eticket-title">E-Tiket Kunjungan</div>
+            <div class="eticket-instruction">
+                Tunjukkan QR code ini kepada petugas saat tiba di lokasi untuk verifikasi pemesanan Anda.
+            </div>
+            <div class="eticket-code">{{ $booking->booking_code }}</div>
+        </div>
+    </div>
+    @endif
 
     {{-- PAYMENT INFO --}}
     @if($booking->payment)

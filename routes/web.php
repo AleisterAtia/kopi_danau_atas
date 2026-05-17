@@ -12,6 +12,8 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -45,6 +47,12 @@ Route::middleware('guest')->group(function () {
     // Google Login Routes
     Route::get('/auth/google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+    // Password reset
+    Route::get('/lupa-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
+    Route::post('/lupa-password', [ForgotPasswordController::class, 'sendLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'update'])->name('password.update');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
@@ -78,6 +86,7 @@ Route::post('/email/verification-notification', function (Request $request) {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Booking
     Route::get('/booking', [BookingController::class, 'myBookings'])->name('booking.index');
+    Route::post('/booking/create', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/{booking}', [BookingController::class, 'show'])->name('booking.show');
     Route::get('/booking/{booking}/invoice', [InvoiceController::class, 'download'])->name('booking.invoice');
