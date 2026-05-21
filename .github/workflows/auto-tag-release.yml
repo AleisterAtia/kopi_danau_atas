@@ -1,15 +1,17 @@
-name: Auto Tag and Release Production
+name: Manual Tag and Release Production
 
-# Pipeline ini hanya akan berjalan ketika ada kode yang di-push/di-merge ke branch 'main'
+# Pipeline ini sekarang hanya akan berjalan ketika dipicu secara manual (menggunakan tombol Run workflow)
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-and-tag:
     runs-on: ubuntu-latest
     
+    # Menambahkan konfigurasi ini untuk menghilangkan warning Node.js 20
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      
     # Memberikan izin kepada GitHub Actions untuk membuat tag dan release di repository
     permissions:
       contents: write 
