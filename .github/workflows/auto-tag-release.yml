@@ -1,0 +1,36 @@
+name: Auto Tag and Release Production
+
+# Pipeline ini hanya akan berjalan ketika ada kode yang di-push/di-merge ke branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-tag:
+    runs-on: ubuntu-latest
+    
+    # Memberikan izin kepada GitHub Actions untuk membuat tag dan release di repository
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0' # Penting: mengambil seluruh riwayat commit untuk menentukan versi tag berikutnya
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch # Otomatis menaikkan angka terakhir (misal: v1.0.0 menjadi v1.0.1)
+          
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
