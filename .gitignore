@@ -25,6 +25,10 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-trd.md
+usecase.md
+class-diagram.md
+activity-diagram.md
+sequence-diagram.md
 prd.md
+trd.md
 openclaw.json

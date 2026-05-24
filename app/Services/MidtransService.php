@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Midtrans\Config;
 use Midtrans\Snap;
+use RuntimeException;
 
 class MidtransService
 {
@@ -22,18 +23,37 @@ class MidtransService
     }
 
     /**
-     * Create a Snap token for a booking.
+     * Create (or refresh) a Snap token for a booking.
+     *
+     * Behaviour:
+     * - If the booking is already paid/confirmed/completed → reject.
+     *   The user should not be able to pay twice.
+     * - If a Payment row already exists with status `pending` → reuse
+     *   its `midtrans_order_id` so the existing webhook
+     *   correlation continues to work. We still ask Midtrans for a
+     *   fresh Snap token (Snap tokens have a short TTL).
+     * - Otherwise create a new Payment row with a brand-new order_id.
      */
     public function createSnapToken(Booking $booking): string
     {
-        $booking->load(['user', 'tourPackage']);
+        $booking->load(['user', 'tourPackage', 'payment']);
 
-        $orderId = 'KDA-' . $booking->id . '-' . time();
+        if (in_array($booking->status, ['paid', 'confirmed', 'completed'], true)) {
+            throw new RuntimeException('Booking ini sudah dibayar dan tidak dapat dibayar ulang.');
+        }
+
+        $existingPayment = $booking->payment;
+
+        // Reuse the existing order_id when we still have a pending payment.
+        // This keeps webhook correlation stable across "Pay Again" clicks.
+        $orderId = ($existingPayment && $existingPayment->status === 'pending' && $existingPayment->midtrans_order_id)
+            ? $existingPayment->midtrans_order_id
+            : 'KDA-' . $booking->id . '-' . time();
 
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
-                'gross_amount' => (int) $booking->total_price,
+                'gross_amount' => (int) round($booking->total_price),
             ],
             'customer_details' => [
                 'first_name' => $booking->guest_name ?? $booking->user->name,
@@ -43,7 +63,7 @@ class MidtransService
             'item_details' => [
                 [
                     'id' => $booking->tour_package_id,
-                    'price' => (int) $booking->tourPackage->price,
+                    'price' => (int) round($booking->tourPackage->price),
                     'quantity' => $booking->guest_count,
                     'name' => substr($booking->tourPackage->name, 0, 50),
                 ],
@@ -55,16 +75,22 @@ class MidtransService
 
         $snapToken = Snap::getSnapToken($params);
 
-        // Store or update payment record
         Payment::updateOrCreate(
             ['booking_id' => $booking->id],
             [
                 'midtrans_order_id' => $orderId,
                 'snap_token' => $snapToken,
-                'gross_amount' => $booking->total_price,
+                'gross_amount' => round($booking->total_price, 2),
                 'status' => 'pending',
             ]
         );
+
+        Log::info('Midtrans Snap token created', [
+            'booking_id' => $booking->id,
+            'booking_code' => $booking->booking_code,
+            'order_id' => $orderId,
+            'reused' => $existingPayment && $existingPayment->midtrans_order_id === $orderId,
+        ]);
 
         return $snapToken;
     }
@@ -75,40 +101,74 @@ class MidtransService
     public function verifySignature(array $notification): bool
     {
         $signatureKey = hash('sha512',
-            $notification['order_id'] .
-            $notification['status_code'] .
-            $notification['gross_amount'] .
+            ($notification['order_id'] ?? '') .
+            ($notification['status_code'] ?? '') .
+            ($notification['gross_amount'] ?? '') .
             config('midtrans.server_key')
         );
 
-        return $signatureKey === ($notification['signature_key'] ?? '');
+        return hash_equals($signatureKey, (string) ($notification['signature_key'] ?? ''));
     }
 
     /**
-     * Handle notification from Midtrans webhook.
+     * Handle a notification payload (either from the webhook or from
+     * the client-side polling fallback).
+     *
+     * Idempotency: if Midtrans replays a notification we have already
+     * processed (same `transaction_id` for the same payment), we
+     * short-circuit so QR / email / status updates do not run twice.
      */
     public function handleNotification(array $notification): void
     {
-        $payment = Payment::where('midtrans_order_id', $notification['order_id'])->first();
+        $orderId = $notification['order_id'] ?? null;
+
+        if (! $orderId) {
+            Log::warning('Midtrans notification without order_id', $notification);
+            return;
+        }
+
+        $payment = Payment::where('midtrans_order_id', $orderId)->first();
 
         if (! $payment) {
+            Log::warning('Midtrans notification for unknown order_id', [
+                'order_id' => $orderId,
+            ]);
+            return;
+        }
+
+        $incomingTransactionId = $notification['transaction_id'] ?? null;
+        $incomingStatus = $notification['transaction_status'] ?? '';
+
+        // Idempotency: same transaction_id + same status already processed.
+        if (
+            $incomingTransactionId
+            && $payment->midtrans_transaction_id === $incomingTransactionId
+            && $payment->status === $this->mapTransactionStatus($incomingStatus)
+        ) {
+            Log::info('Midtrans notification ignored (already processed)', [
+                'order_id' => $orderId,
+                'transaction_id' => $incomingTransactionId,
+                'status' => $incomingStatus,
+            ]);
             return;
         }
 
         $payment->update([
-            'midtrans_transaction_id' => $notification['transaction_id'] ?? null,
+            'midtrans_transaction_id' => $incomingTransactionId,
             'payment_type' => $notification['payment_type'] ?? null,
             'midtrans_response' => $notification,
         ]);
 
-        $transactionStatus = $notification['transaction_status'] ?? '';
-
-        switch ($transactionStatus) {
+        switch ($incomingStatus) {
             case 'capture':
             case 'settlement':
                 // Idempotency: only fire post-payment side-effects (QR + email)
                 // when this booking transitions INTO paid for the first time.
-                $wasAlreadyPaid = in_array($payment->booking->status, ['paid', 'confirmed', 'completed']);
+                $wasAlreadyPaid = in_array(
+                    $payment->booking->status,
+                    ['paid', 'confirmed', 'completed'],
+                    true
+                );
 
                 $payment->update(['status' => 'settlement', 'paid_at' => $payment->paid_at ?? now()]);
                 $payment->booking->update(['status' => 'paid']);
@@ -125,7 +185,7 @@ class MidtransService
 
             case 'cancel':
             case 'deny':
-                $payment->update(['status' => $transactionStatus]);
+                $payment->update(['status' => $incomingStatus]);
                 $payment->booking->update(['status' => 'cancelled']);
                 break;
 
@@ -138,7 +198,32 @@ class MidtransService
                 $payment->update(['status' => 'refund']);
                 $payment->booking->update(['status' => 'cancelled']);
                 break;
+
+            default:
+                Log::warning('Midtrans notification with unknown status', [
+                    'order_id' => $orderId,
+                    'status' => $incomingStatus,
+                ]);
         }
+
+        Log::info('Midtrans notification processed', [
+            'order_id' => $orderId,
+            'transaction_id' => $incomingTransactionId,
+            'status' => $incomingStatus,
+        ]);
+    }
+
+    /**
+     * Map a Midtrans transaction_status value to our Payment.status
+     * field. Only used for idempotency comparisons.
+     */
+    protected function mapTransactionStatus(string $midtransStatus): string
+    {
+        return match ($midtransStatus) {
+            'capture', 'settlement' => 'settlement',
+            'refund', 'partial_refund' => 'refund',
+            default => $midtransStatus,
+        };
     }
 
     /**
