@@ -24,7 +24,20 @@ class PaymentController extends Controller
     {
         abort_if($booking->user_id !== auth()->id(), 403);
 
-        $snapToken = $midtrans->createSnapToken($booking);
+        try {
+            $snapToken = $midtrans->createSnapToken($booking);
+        } catch (\RuntimeException $e) {
+            // Booking already paid, or other guard rejection.
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 409);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat token pembayaran: ' . $e->getMessage(),
+            ], 500);
+        }
 
         return response()->json(['snap_token' => $snapToken]);
     }

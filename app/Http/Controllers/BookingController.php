@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\TourPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
@@ -66,15 +67,18 @@ class BookingController extends Controller
 
         // Lock the package row + recheck quota inside a transaction to avoid
         // race conditions where two users book the last seats simultaneously.
+        // We throw ValidationException so the framework rolls back the
+        // transaction cleanly and the caller gets a normal flash-back response
+        // instead of an `abort(redirect)` short-circuit (which loses session
+        // flashes when the transaction rolls back).
         $booking = DB::transaction(function () use ($request) {
             $package = TourPackage::lockForUpdate()->findOrFail($request->tour_package_id);
 
             $available = $package->getAvailableQuota($request->visit_date);
             if ($request->guest_count > $available) {
-                abort(redirect()
-                    ->back()
-                    ->withInput()
-                    ->withErrors(['guest_count' => __('Kuota tidak mencukupi. Sisa kuota: ') . $available]));
+                throw ValidationException::withMessages([
+                    'guest_count' => __('Kuota tidak mencukupi. Sisa kuota: ') . $available,
+                ]);
             }
 
             return Booking::create([
