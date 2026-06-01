@@ -12,8 +12,12 @@ class BookingController extends Controller
 {
     public function myBookings()
     {
+        // Eager-load tourPackage.images so each card thumbnail does not
+        // trigger an extra query per booking. Also eager-load payment
+        // (1:1) and review so action buttons can be rendered without
+        // additional queries.
         $bookings = Booking::where('user_id', auth()->id())
-            ->with(['tourPackage', 'payment'])
+            ->with(['tourPackage.images', 'payment', 'review'])
             ->latest()
             ->paginate(10);
 
