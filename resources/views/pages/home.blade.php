@@ -50,19 +50,19 @@
                 <div class="grid grid-cols-12 grid-rows-6 gap-3 h-[420px]">
                     @if($about->images->count() >= 2)
                         <div class="col-span-7 row-span-6 rounded-xl overflow-hidden">
-                            <img src="{{ Storage::url($about->images[0]->image_path) }}" alt="" class="w-full h-full object-cover">
+                            <img src="{{ Storage::url($about->images[0]->image_path) }}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
                         </div>
                         <div class="col-span-5 row-span-3 rounded-xl overflow-hidden">
-                            <img src="{{ Storage::url($about->images[1]->image_path) }}" alt="" class="w-full h-full object-cover">
+                            <img src="{{ Storage::url($about->images[1]->image_path) }}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
                         </div>
                         @if($about->images->count() >= 3)
                         <div class="col-span-5 row-span-3 rounded-xl overflow-hidden">
-                            <img src="{{ Storage::url($about->images[2]->image_path) }}" alt="" class="w-full h-full object-cover">
+                            <img src="{{ Storage::url($about->images[2]->image_path) }}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
                         </div>
                         @endif
                     @elseif($about->images->first())
                         <div class="col-span-12 row-span-6 rounded-xl overflow-hidden">
-                            <img src="{{ Storage::url($about->images->first()->image_path) }}" alt="" class="w-full h-full object-cover">
+                            <img src="{{ Storage::url($about->images->first()->image_path) }}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
                         </div>
                     @else
                         <div class="col-span-12 row-span-6 rounded-xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
@@ -113,7 +113,7 @@
                 {{-- Image --}}
                 <div class="relative h-52 overflow-hidden">
                     @if($package->images->first())
-                        <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                        <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async">
                     @else
                         <div class="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
                             <svg class="w-10 h-10 text-primary/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -166,7 +166,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     @foreach($education->images->take(4) as $index => $img)
                         <div class="rounded-xl overflow-hidden {{ $index % 2 == 1 ? 'mt-6' : '' }}">
-                            <img src="{{ Storage::url($img->image_path) }}" alt="{{ $img->caption ?? '' }}" class="w-full aspect-[4/5] object-cover" loading="lazy">
+                            <img src="{{ Storage::url($img->image_path) }}" alt="{{ $img->caption ?? '' }}" class="w-full aspect-[4/5] object-cover" loading="lazy" decoding="async">
                         </div>
                     @endforeach
                 </div>

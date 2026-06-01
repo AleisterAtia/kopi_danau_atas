@@ -59,8 +59,9 @@ class TourPackage extends Model
      *
      * Counts pending bookings (created within the last hour, since older
      * pending bookings are auto-expired by the bookings:expire-pending
-     * scheduled command) plus paid/confirmed bookings as occupying quota.
-     * This prevents double-booking while a user is still in the payment flow.
+     * scheduled command) plus paid/confirmed/completed bookings as
+     * occupying quota. This prevents double-booking while a user is
+     * still in the payment flow.
      */
     public function getAvailableQuota(string $date): int
     {
@@ -98,11 +99,27 @@ class TourPackage extends Model
     /**
      * Get average rating from all reviews.
      *
-     * Reviews are auto-published when submitted (no moderation queue), so
-     * every review contributes to the average.
+     * If the controller pre-loaded the aggregate via `withAvg('reviews',
+     * 'rating')`, Eloquent exposes it as `reviews_avg_rating` and we use
+     * it directly — saving an aggregate query per package on listings.
+     * Falls back to a fresh query otherwise so callers that don't eager
+     * load still work.
+     *
+     * Reviews are auto-published, so every review contributes to the
+     * average.
      */
     public function getAverageRatingAttribute(): float
     {
-        return round($this->reviews()->avg('rating') ?? 0, 1);
+        // `withAvg('reviews','rating')` exposes the aggregate at the
+        // virtual column `reviews_avg_rating` (null when no reviews).
+        // Detect the eager-loaded form by inspecting the attribute bag
+        // directly (so we don't accidentally recurse into the accessor).
+        $attributes = $this->getAttributes();
+        if (array_key_exists('reviews_avg_rating', $attributes)) {
+            return round((float) ($attributes['reviews_avg_rating'] ?? 0), 1);
+        }
+
+        // Fallback for callers that didn't eager-load the aggregate.
+        return round((float) ($this->reviews()->avg('rating') ?? 0), 1);
     }
 }

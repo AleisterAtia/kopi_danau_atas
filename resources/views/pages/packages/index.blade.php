@@ -26,7 +26,7 @@
                 <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100">
                     <div class="relative h-56 overflow-hidden group">
                         @if($package->images->first())
-                            <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" decoding="async">
                         @else
                             <div class="w-full h-full bg-gray-200 flex items-center justify-center">
                                 <span class="text-gray-400">No Image</span>
@@ -52,7 +52,7 @@
                         <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                             <div class="flex items-center">
                                 <span class="text-warning text-sm mr-1">★</span>
-                                <span class="text-sm font-bold">{{ $package->averageRating > 0 ? $package->averageRating : '-' }}</span>
+                                <span class="text-sm font-bold">{{ $package->average_rating > 0 ? $package->average_rating : '-' }}</span>
                                 <span class="text-xs text-gray-500 ml-1">({{ $package->reviews_count ?? 0 }} ulasan)</span>
                             </div>
                             <a href="{{ route('packages.show', $package->slug) }}" class="btn-primary text-sm px-4 py-1.5">
