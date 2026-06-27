@@ -1,58 +1,173 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-Tourism Information System — CV Kopi Danau Atas
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem informasi e-tourism untuk CV Kopi Danau Atas: katalog paket wisata kebun
+kopi, pemesanan (booking) dengan kuota harian, pembayaran via **Midtrans Snap**,
+e-ticket QR + invoice PDF, ulasan, dan panel admin **Filament**.
 
-## About Laravel
+> Tugas Akhir — Fadhil Dzaky Arhab (2301092010).
+> Dokumentasi UML & perencanaan ada di folder [`docs/`](docs/)
+> (use case, activity diagram, sprint planning).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Komponen | Teknologi |
+|----------|-----------|
+| Framework | Laravel 11 (PHP 8.3) |
+| Admin panel | Filament 3.3 |
+| Pembayaran | Midtrans Snap (`midtrans/midtrans-php`) |
+| Login sosial | Google OAuth (Laravel Socialite) |
+| PDF / QR | `barryvdh/laravel-dompdf`, `simplesoftwareio/simple-qrcode` |
+| Antrian / cache / sesi | database (default) |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Prasyarat
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP **8.3+** dengan ekstensi umum Laravel (`pdo`, `mbstring`, `openssl`, `gd`/`imagick` untuk QR PNG).
+- Composer 2.
+- Node.js 18+ & npm (build aset Vite).
+- Database: **SQLite** (default, paling cepat untuk dev) atau MySQL/MariaDB.
+- Akun **Midtrans Sandbox** dan kredensial **Google OAuth** (lihat di bawah).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Setup cepat
 
 ```bash
-composer require laravel/boost --dev
+# 1. Dependensi
+composer install
+npm install
 
-php artisan boost:install
+# 2. Environment
+cp .env.example .env
+php artisan key:generate
+#  -> isi MIDTRANS_* dan GOOGLE_* di .env (lihat bagian "Konfigurasi Integrasi")
+
+# 3. Database (SQLite)
+#  Windows PowerShell:  New-Item -ItemType File database/database.sqlite
+#  Linux/macOS:         touch database/database.sqlite
+php artisan migrate --seed   # --seed opsional bila ada seeder
+
+# 4. Storage symlink (agar QR & gambar tampil)
+php artisan storage:link
+
+# 5. Build aset
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Menjalankan (development)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Sistem memerlukan **tiga proses** agar berfungsi penuh. Cara termudah memakai
+skrip gabungan:
 
-## Code of Conduct
+```bash
+composer dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Skrip ini menyalakan sekaligus: **web server**, **queue worker**, **log viewer (pail)**, dan **Vite**.
 
-## Security Vulnerabilities
+Bila ingin menjalankan manual, butuh minimal tiga terminal:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan serve            # 1) Web server
+php artisan queue:work       # 2) Queue worker  (WAJIB — lihat catatan di bawah)
+npm run dev                  # 3) Vite (hot reload aset)
+```
 
-## License
+### ⚠️ Dua dependensi runtime yang WAJIB ada
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Proses | Bila tidak dijalankan |
+|--------|------------------------|
+| **`php artisan queue:work`** | Email konfirmasi + e-ticket + invoice **tidak akan terkirim** (email di-`queue`, bukan dikirim sinkron). |
+| **Scheduler (`php artisan schedule:run` tiap menit via cron)** | Booking `pending` **tidak pernah kedaluwarsa** (kuota tidak dibebaskan) dan booking lampau **tidak auto-complete**. |
+
+Scheduler menjalankan dua perintah terjadwal (`routes/console.php`):
+
+- `bookings:expire-pending` — meng-expire booking `pending` > 1 jam (tiap 15 menit).
+- `bookings:auto-complete` — `paid`/`confirmed` → `completed` setelah `visit_date` lewat (harian 23:55).
+
+Di server produksi, daftarkan satu cron:
+
+```cron
+* * * * * cd /path/ke/proyek && php artisan schedule:run >> /dev/null 2>&1
+```
+
+dan jalankan worker sebagai layanan (mis. `supervisor` / `systemd`):
+
+```bash
+php artisan queue:work --tries=3 --timeout=90
+```
+
+---
+
+## Konfigurasi Integrasi
+
+### Midtrans (Sandbox)
+1. Daftar di <https://dashboard.sandbox.midtrans.com>.
+2. **Settings → Access Keys**, salin `Server Key`, `Client Key`, `Merchant ID`.
+3. Isi di `.env`:
+   ```env
+   MIDTRANS_SERVER_KEY=SB-Mid-server-xxxx
+   MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxx
+   MIDTRANS_MERCHANT_ID=Gxxxxxxx
+   MIDTRANS_IS_PRODUCTION=false
+   ```
+4. **Settings → Configuration**, set *Payment Notification URL* ke
+   `https://<domain-anda>/api/midtrans/notification` (gunakan tunneling seperti
+   `ngrok` saat development agar webhook bisa mencapai mesin lokal).
+
+### Google OAuth
+1. <https://console.cloud.google.com> → **APIs & Services → Credentials → OAuth client ID** (Web application).
+2. Tambah *Authorized redirect URI*: `http://localhost:8000/auth/google/callback`.
+3. Isi di `.env`:
+   ```env
+   GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=xxxx
+   GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+   ```
+
+---
+
+## Testing
+
+Test memakai SQLite in-memory (lihat `phpunit.xml`) — tidak menyentuh database dev.
+
+```bash
+php artisan test                       # seluruh suite
+php artisan test --filter=Midtrans     # contoh: hanya test webhook
+```
+
+Cakupan jalur kritis (uang & konkurensi):
+
+| Test | Yang dijamin |
+|------|--------------|
+| `tests/Feature/MidtransWebhookTest.php` | Verifikasi tanda tangan webhook, pemetaan status, **idempotensi** (efek samping bayar hanya sekali). |
+| `tests/Feature/BookingQuotaTest.php` | Proteksi overbooking (kuota dicek ulang dalam transaksi ber-lock). |
+| `tests/Feature/BookingFlowTest.php` | Gate verifikasi email, pre-check kuota, persetujuan S&K, pembuatan booking. |
+| `tests/Feature/AuthRateLimitTest.php` | Rate limiting login (anti brute-force). |
+| `tests/Unit/BookingStateMachineTest.php` | Transisi status yang sah. |
+| `tests/Unit/MidtransSignatureTest.php` | Hashing tanda tangan Midtrans. |
+
+Lint gaya kode:
+
+```bash
+vendor/bin/pint
+```
+
+---
+
+## Checklist produksi (ringkas)
+
+- [ ] `APP_ENV=production`, `APP_DEBUG=false`, `APP_KEY` ter-generate.
+- [ ] `MIDTRANS_IS_PRODUCTION=true` + kunci produksi; webhook URL produksi terdaftar.
+- [ ] Queue worker berjalan sebagai layanan; cron `schedule:run` aktif.
+- [ ] `php artisan storage:link` dijalankan; aset dibangun (`npm run build`).
+- [ ] `php artisan config:cache route:cache view:cache` untuk performa.
+- [ ] Backup database & folder `storage/app`.
+
+> Untuk daftar gap menuju production lengkap (keamanan, fitur, ops), lihat
+> [`docs/sprint-planning.md`](docs/sprint-planning.md).

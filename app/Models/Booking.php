@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class Booking extends Model
 {
+    use HasFactory;
+
     /**
      * Allowed status transitions. Used by the BookingObserver and the
      * Filament EditBooking page to prevent illegal moves (e.g. moving a
@@ -18,12 +21,12 @@ class Booking extends Model
      * Format: from-status => [list of allowed to-statuses]
      */
     public const ALLOWED_TRANSITIONS = [
-        'pending'   => ['paid', 'cancelled', 'expired'],
-        'paid'      => ['confirmed', 'completed', 'cancelled'],
+        'pending' => ['paid', 'cancelled', 'expired'],
+        'paid' => ['confirmed', 'completed', 'cancelled'],
         'confirmed' => ['completed', 'cancelled'],
         'completed' => [],            // terminal
         'cancelled' => [],            // terminal
-        'expired'   => [],            // terminal
+        'expired' => [],            // terminal
     ];
 
     /**
@@ -107,14 +110,14 @@ class Booking extends Model
      */
     public static function generateBookingCode(string $date): string
     {
-        $prefix = 'KDA-' . date('Ymd', strtotime($date));
+        $prefix = 'KDA-'.date('Ymd', strtotime($date));
 
         $attempts = 0;
         while (true) {
             $attempts++;
             try {
                 return DB::transaction(function () use ($prefix) {
-                    $lastBooking = static::where('booking_code', 'like', $prefix . '%')
+                    $lastBooking = static::where('booking_code', 'like', $prefix.'%')
                         ->orderByDesc('id')
                         ->lockForUpdate()
                         ->first();
@@ -125,7 +128,7 @@ class Booking extends Model
                         $sequence = $lastSequence + 1;
                     }
 
-                    return $prefix . '-' . str_pad((string) $sequence, 5, '0', STR_PAD_LEFT);
+                    return $prefix.'-'.str_pad((string) $sequence, 5, '0', STR_PAD_LEFT);
                 });
             } catch (QueryException $e) {
                 if ($attempts >= self::CODE_GENERATION_MAX_ATTEMPTS) {

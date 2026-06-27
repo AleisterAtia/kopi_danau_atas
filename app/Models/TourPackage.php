@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Sluggable\HasSlug;
@@ -9,7 +10,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class TourPackage extends Model
 {
-    use HasSlug;
+    use HasFactory, HasSlug;
 
     protected $fillable = [
         'name',
@@ -66,7 +67,7 @@ class TourPackage extends Model
     public function getAvailableQuota(string $date): int
     {
         $bookedCount = $this->bookings()
-            ->where('visit_date', $date)
+            ->whereDate('visit_date', $date)
             ->where(function ($query) {
                 $query->whereIn('status', ['paid', 'confirmed', 'completed'])
                     ->orWhere(function ($q) {
@@ -85,7 +86,7 @@ class TourPackage extends Model
     public function getBookedCount(string $date): int
     {
         return (int) $this->bookings()
-            ->where('visit_date', $date)
+            ->whereDate('visit_date', $date)
             ->where(function ($query) {
                 $query->whereIn('status', ['paid', 'confirmed', 'completed'])
                     ->orWhere(function ($q) {
