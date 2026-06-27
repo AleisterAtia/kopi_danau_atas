@@ -1,23 +1,22 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\TourPackageController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\MidtransWebhookController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\TourPackageController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,9 +39,9 @@ Route::get('/lang/{locale}', [LocaleController::class, 'switch'])->name('locale.
 
 Route::middleware('guest')->group(function () {
     Route::get('/masuk', [LoginController::class, 'showForm'])->name('login');
-    Route::post('/masuk', [LoginController::class, 'login']);
+    Route::post('/masuk', [LoginController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/daftar', [RegisterController::class, 'showForm'])->name('register');
-    Route::post('/daftar', [RegisterController::class, 'register']);
+    Route::post('/daftar', [RegisterController::class, 'register'])->middleware('throttle:5,1');
 
     // Google Login Routes
     Route::get('/auth/google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
@@ -50,9 +49,9 @@ Route::middleware('guest')->group(function () {
 
     // Password reset
     Route::get('/lupa-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
-    Route::post('/lupa-password', [ForgotPasswordController::class, 'sendLink'])->name('password.email');
+    Route::post('/lupa-password', [ForgotPasswordController::class, 'sendLink'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showForm'])->name('password.reset');
-    Route::post('/reset-password', [ResetPasswordController::class, 'update'])->name('password.update');
+    Route::post('/reset-password', [ResetPasswordController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
@@ -69,11 +68,13 @@ Route::get('/email/verify', function () {
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
+
     return redirect('/')->with('success', __('Email Anda berhasil diverifikasi.'));
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
+
     return back()->with('message', __('Link verifikasi telah dikirim ulang!'));
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
