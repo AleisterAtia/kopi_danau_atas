@@ -6,15 +6,17 @@ use App\Filament\Resources\BookingResource\Pages;
 use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use App\Services\QrCodeService;
+use App\Services\RefundService;
+use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\DatePicker;
-use Filament\Notifications\Notification;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -22,9 +24,13 @@ use Illuminate\Support\Facades\Mail;
 class BookingResource extends Resource
 {
     protected static ?string $model = Booking::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
+
     protected static ?string $navigationGroup = 'Transactions';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'booking_code';
 
     public static function form(Form $form): Form
@@ -44,7 +50,7 @@ class BookingResource extends Resource
                         ->relationship('tourPackage', 'name')
                         ->disabled(),
 
-                    Forms\Components\DatePicker::make('visit_date')
+                    DatePicker::make('visit_date')
                         ->disabled(),
 
                     Forms\Components\TextInput::make('guest_count')
@@ -173,11 +179,12 @@ class BookingResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['visit_from'] ?? null) {
-                            $indicators[] = 'Dari ' . \Carbon\Carbon::parse($data['visit_from'])->format('d M Y');
+                            $indicators[] = 'Dari '.Carbon::parse($data['visit_from'])->format('d M Y');
                         }
                         if ($data['visit_until'] ?? null) {
-                            $indicators[] = 'Sampai ' . \Carbon\Carbon::parse($data['visit_until'])->format('d M Y');
+                            $indicators[] = 'Sampai '.Carbon::parse($data['visit_until'])->format('d M Y');
                         }
+
                         return $indicators;
                     }),
             ])
@@ -213,6 +220,41 @@ class BookingResource extends Resource
                     ->action(function (Booking $record) {
                         $record->update(['status' => 'cancelled']);
                         Notification::make()->title('Booking cancelled')->warning()->send();
+                    }),
+
+                Tables\Actions\Action::make('refund')
+                    ->label('Refund')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('danger')
+                    // Only settled payments on a paid/confirmed booking can be
+                    // refunded; `completed` is terminal (the visit happened).
+                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true)
+                        && $record->payment?->status === 'settlement')
+                    ->requiresConfirmation()
+                    ->modalHeading('Refund pembayaran')
+                    ->modalDescription('Booking akan dibatalkan & kuota dibebaskan. Selesaikan transfer dana aktual di dashboard Midtrans.')
+                    ->form([
+                        Forms\Components\Textarea::make('refund_note')
+                            ->label('Catatan / alasan refund')
+                            ->required()
+                            ->maxLength(500)
+                            ->rows(3),
+                    ])
+                    ->action(function (Booking $record, array $data) {
+                        try {
+                            app(RefundService::class)->refund($record, $data['refund_note'], auth()->user());
+                            Notification::make()
+                                ->title('Pesanan ditandai refund')
+                                ->body('Jangan lupa selesaikan refund di dashboard Midtrans.')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->title('Gagal melakukan refund')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
 
                 Tables\Actions\Action::make('resendEticket')

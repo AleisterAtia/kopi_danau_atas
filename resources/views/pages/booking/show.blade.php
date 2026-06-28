@@ -36,6 +36,16 @@
             </div>
         @endif
 
+        @if($errors->any())
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
+                <ul class="list-disc list-inside text-sm text-red-700">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         {{-- E-Ticket QR Code (paid/confirmed/completed) --}}
         @if(in_array($booking->status, ['paid', 'confirmed', 'completed']) && $booking->qr_code_path)
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -53,6 +63,12 @@
                         <div class="inline-block bg-gray-900 text-white font-mono text-sm px-4 py-2 rounded-lg tracking-wider">
                             {{ $booking->booking_code }}
                         </div>
+                        @if($booking->checked_in_at)
+                        <p class="mt-3 text-sm text-green-700 flex items-center justify-center md:justify-start">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {{ __('Sudah check-in pada') }} {{ \Carbon\Carbon::parse($booking->checked_in_at)->format('d M Y H:i') }}
+                        </p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -76,6 +92,13 @@
                 <a href="{{ route('payment.checkout', $booking) }}" class="btn-primary whitespace-nowrap w-full sm:w-auto text-center justify-center">
                     {{ __('Bayar Sekarang') }}
                 </a>
+                <form method="POST" action="{{ route('booking.cancel', $booking) }}" class="w-full sm:w-auto"
+                      onsubmit="return confirm('{{ __('Batalkan pesanan ini? Tindakan ini tidak dapat dibatalkan.') }}');">
+                    @csrf
+                    <button type="submit" class="btn btn-outline !border-red-300 !text-red-700 hover:!bg-red-50 whitespace-nowrap w-full sm:w-auto justify-center">
+                        {{ __('Batalkan') }}
+                    </button>
+                </form>
             </div>
         </div>
         @endif

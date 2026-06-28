@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -47,6 +48,9 @@ class Booking extends Model
         'total_price',
         'status',
         'qr_code_path',
+        'ticket_token',
+        'checked_in_at',
+        'checked_in_by',
     ];
 
     protected function casts(): array
@@ -54,7 +58,29 @@ class Booking extends Model
         return [
             'visit_date' => 'date',
             'total_price' => 'decimal:2',
+            'checked_in_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Assign an unguessable ticket token to every new booking so the QR
+     * e-ticket never has to encode the enumerable booking_code.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Booking $booking) {
+            if (empty($booking->ticket_token)) {
+                $booking->ticket_token = self::generateTicketToken();
+            }
+        });
+    }
+
+    /**
+     * A high-entropy, URL-safe token embedded in the e-ticket QR.
+     */
+    public static function generateTicketToken(): string
+    {
+        return Str::random(64);
     }
 
     public function user(): BelongsTo
@@ -75,6 +101,36 @@ class Booking extends Model
     public function review(): HasOne
     {
         return $this->hasOne(Review::class);
+    }
+
+    public function checkedInBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_in_by');
+    }
+
+    /**
+     * Only paid/confirmed/completed bookings represent a valid e-ticket.
+     * pending/cancelled/expired tickets must be rejected at the gate.
+     */
+    public function isCheckInEligible(): bool
+    {
+        return in_array($this->status, ['paid', 'confirmed', 'completed'], true);
+    }
+
+    public function isCheckedIn(): bool
+    {
+        return $this->checked_in_at !== null;
+    }
+
+    /**
+     * Payload encoded into the e-ticket QR: a deep-link to the staff
+     * check-in page carrying the unguessable token. Scanning it from a
+     * device already logged into the admin panel prefills and validates
+     * the ticket in one step.
+     */
+    public function ticketQrPayload(): string
+    {
+        return url('/admin/ticket-check-in').'?token='.urlencode((string) $this->ticket_token);
     }
 
     /**

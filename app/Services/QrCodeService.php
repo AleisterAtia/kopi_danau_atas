@@ -9,8 +9,9 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 /**
  * Generate and store QR code images for booking e-tickets.
  *
- * The QR encodes the human-readable booking_code (e.g. KDA-20260520-00001),
- * which staff at the venue can scan to look up the booking quickly.
+ * The QR encodes a check-in deep-link carrying the booking's unguessable
+ * `ticket_token` (NOT the enumerable booking_code), so a forged or
+ * guessed QR cannot be used to check in at the venue.
  */
 class QrCodeService
 {
@@ -22,7 +23,14 @@ class QrCodeService
      */
     public function generate(Booking $booking): string
     {
-        $relativePath = 'qrcodes/' . $booking->booking_code . '.png';
+        // Older bookings created before the ticket_token column existed may
+        // not have one yet — backfill lazily so their QR is still secure.
+        if (empty($booking->ticket_token)) {
+            $booking->forceFill(['ticket_token' => Booking::generateTicketToken()])->save();
+        }
+
+        $payload = $booking->ticketQrPayload();
+        $relativePath = 'qrcodes/'.$booking->booking_code.'.png';
 
         if (Storage::disk('public')->exists($relativePath)) {
             return $relativePath;
@@ -36,12 +44,12 @@ class QrCodeService
                 ->size(400)
                 ->margin(1)
                 ->errorCorrection('H')
-                ->generate($booking->booking_code);
+                ->generate($payload);
 
             Storage::disk('public')->put($relativePath, $png);
         } catch (\Throwable $e) {
             // Imagick not available — emit SVG instead.
-            $relativePath = 'qrcodes/' . $booking->booking_code . '.svg';
+            $relativePath = 'qrcodes/'.$booking->booking_code.'.svg';
 
             if (Storage::disk('public')->exists($relativePath)) {
                 return $relativePath;
@@ -51,7 +59,7 @@ class QrCodeService
                 ->size(400)
                 ->margin(1)
                 ->errorCorrection('H')
-                ->generate($booking->booking_code);
+                ->generate($payload);
 
             Storage::disk('public')->put($relativePath, $svg);
         }
@@ -69,6 +77,7 @@ class QrCodeService
         }
 
         $abs = Storage::disk('public')->path($booking->qr_code_path);
+
         return file_exists($abs) ? $abs : null;
     }
 }
