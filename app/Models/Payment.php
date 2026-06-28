@@ -20,6 +20,8 @@ class Payment extends Model
         'gross_amount',
         'midtrans_response',
         'paid_at',
+        'refunded_at',
+        'refund_note',
     ];
 
     protected function casts(): array
@@ -28,6 +30,7 @@ class Payment extends Model
             'gross_amount' => 'decimal:2',
             'midtrans_response' => 'array',
             'paid_at' => 'datetime',
+            'refunded_at' => 'datetime',
         ];
     }
 

@@ -43,7 +43,7 @@ class BookingController extends Controller
         if ($data['guest_count'] > $available) {
             return redirect()
                 ->route('packages.show', $package->slug)
-                ->withErrors(['guest_count' => __('Kuota tidak mencukupi. Sisa kuota: ') . $available]);
+                ->withErrors(['guest_count' => __('Kuota tidak mencukupi. Sisa kuota: ').$available]);
         }
 
         return view('pages.booking.create', [
@@ -81,7 +81,7 @@ class BookingController extends Controller
             $available = $package->getAvailableQuota($request->visit_date);
             if ($request->guest_count > $available) {
                 throw ValidationException::withMessages([
-                    'guest_count' => __('Kuota tidak mencukupi. Sisa kuota: ') . $available,
+                    'guest_count' => __('Kuota tidak mencukupi. Sisa kuota: ').$available,
                 ]);
             }
 
@@ -108,12 +108,39 @@ class BookingController extends Controller
     {
         abort_if($booking->user_id !== auth()->id(), 403);
         $booking->load(['tourPackage.images', 'payment', 'review']);
+
         return view('pages.booking.show', compact('booking'));
+    }
+
+    /**
+     * Cancel a booking on the owner's request.
+     *
+     * Per the T&C only an unpaid (`pending`) booking may be self-cancelled;
+     * paid bookings must go through admin refund. Ownership is enforced
+     * (non-owners get 403) and the actual status change is validated by the
+     * BookingObserver state-machine. Cancelling frees the quota automatically
+     * because `cancelled` bookings are never counted by getAvailableQuota().
+     */
+    public function cancel(Booking $booking)
+    {
+        abort_if($booking->user_id !== auth()->id(), 403);
+
+        if ($booking->status !== 'pending') {
+            return back()->withErrors([
+                'status' => __('Hanya pesanan yang belum dibayar yang dapat dibatalkan.'),
+            ]);
+        }
+
+        $booking->update(['status' => 'cancelled']);
+
+        return redirect()->route('booking.index')
+            ->with('success', __('Pesanan berhasil dibatalkan.'));
     }
 
     public function checkQuota(int $packageId, string $date)
     {
         $package = TourPackage::findOrFail($packageId);
+
         return response()->json([
             'available' => $package->getAvailableQuota($date),
             'capacity' => $package->daily_capacity,

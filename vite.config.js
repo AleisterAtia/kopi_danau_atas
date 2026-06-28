@@ -11,6 +11,9 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        // 5173 (Vite default) falls inside a Windows reserved port range
+        // (Hyper-V/WSL2), which causes EACCES on bind. 5500 is outside it.
+        port: 5500,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
