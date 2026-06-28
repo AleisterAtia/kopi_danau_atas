@@ -13,9 +13,13 @@ use Filament\Tables\Table;
 class CoffeeVarietyResource extends Resource
 {
     protected static ?string $model = CoffeeVariety::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
+
     protected static ?string $navigationGroup = 'Content';
+
     protected static ?int $navigationSort = 4;
+
     protected static ?string $navigationLabel = 'Coffee Varieties';
 
     public static function form(Form $form): Form

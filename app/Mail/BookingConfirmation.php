@@ -89,7 +89,7 @@ class BookingConfirmation extends Mailable implements ShouldQueue
             ->setPaper('a4', 'portrait')
             ->output();
 
-        $attachments[] = Attachment::fromData(fn () => $pdf, 'Invoice-' . $this->booking->booking_code . '.pdf')
+        $attachments[] = Attachment::fromData(fn () => $pdf, 'Invoice-'.$this->booking->booking_code.'.pdf')
             ->withMime('application/pdf');
 
         // QR code — attached inline so the email body can reference it via
@@ -97,7 +97,7 @@ class BookingConfirmation extends Mailable implements ShouldQueue
         $qrPath = app(QrCodeService::class)->absolutePath($this->booking);
         if ($qrPath) {
             $attachments[] = Attachment::fromPath($qrPath)
-                ->as('eticket-qr-' . $this->booking->booking_code . pathinfo($qrPath, PATHINFO_EXTENSION))
+                ->as('eticket-qr-'.$this->booking->booking_code.pathinfo($qrPath, PATHINFO_EXTENSION))
                 ->withMime(str_ends_with($qrPath, '.svg') ? 'image/svg+xml' : 'image/png');
         }
 

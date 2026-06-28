@@ -13,9 +13,13 @@ use Filament\Tables\Table;
 class HomepageSectionResource extends Resource
 {
     protected static ?string $model = HomepageSection::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-home';
+
     protected static ?string $navigationGroup = 'Content';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationLabel = 'Homepage Sections';
 
     public static function form(Form $form): Form

@@ -2,23 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PackageCategory;
 use App\Models\TourPackage;
+use Illuminate\Http\Request;
 
 class TourPackageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->query('q', ''));
+        $categorySlug = $request->query('category');
+        $priceMin = $request->query('price_min');
+        $priceMax = $request->query('price_max');
+        $sort = $request->query('sort', 'latest');
+
         // Eager-load images (avoid N+1 in card thumbnails) and pre-compute
         // the reviews avg rating so the `average_rating` accessor doesn't
         // run an aggregate query per package.
-        $packages = TourPackage::where('is_active', true)
-            ->with('images')
+        $query = TourPackage::where('is_active', true)
+            ->with(['images', 'category'])
             ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->latest()
-            ->paginate(9);
+            ->withAvg('reviews', 'rating');
 
-        return view('pages.packages.index', compact('packages'));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($categorySlug) {
+            $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
+        }
+
+        if (is_numeric($priceMin)) {
+            $query->where('price', '>=', (float) $priceMin);
+        }
+
+        if (is_numeric($priceMax)) {
+            $query->where('price', '<=', (float) $priceMax);
+        }
+
+        match ($sort) {
+            'price_asc' => $query->orderBy('price'),
+            'price_desc' => $query->orderByDesc('price'),
+            'rating' => $query->orderByDesc('reviews_avg_rating'),
+            'name' => $query->orderBy('name'),
+            default => $query->latest(),
+        };
+
+        // withQueryString keeps q/category/price/sort across pagination links.
+        $packages = $query->paginate(9)->withQueryString();
+
+        $categories = PackageCategory::orderBy('name')->get();
+
+        return view('pages.packages.index', compact(
+            'packages',
+            'categories',
+            'search',
+            'categorySlug',
+            'priceMin',
+            'priceMax',
+            'sort'
+        ));
     }
 
     public function show(string $slug)

@@ -14,16 +14,16 @@ class BookingStateMachineTest extends TestCase
     public static function allowedTransitions(): array
     {
         return [
-            'pending → paid'        => ['pending', 'paid', true],
-            'pending → cancelled'   => ['pending', 'cancelled', true],
-            'pending → expired'     => ['pending', 'expired', true],
-            'paid → confirmed'      => ['paid', 'confirmed', true],
-            'paid → completed'      => ['paid', 'completed', true],
-            'paid → cancelled'      => ['paid', 'cancelled', true],
+            'pending → paid' => ['pending', 'paid', true],
+            'pending → cancelled' => ['pending', 'cancelled', true],
+            'pending → expired' => ['pending', 'expired', true],
+            'paid → confirmed' => ['paid', 'confirmed', true],
+            'paid → completed' => ['paid', 'completed', true],
+            'paid → cancelled' => ['paid', 'cancelled', true],
             'confirmed → completed' => ['confirmed', 'completed', true],
             'confirmed → cancelled' => ['confirmed', 'cancelled', true],
-            'same state pending'    => ['pending', 'pending', true],
-            'same state completed'  => ['completed', 'completed', true],
+            'same state pending' => ['pending', 'pending', true],
+            'same state completed' => ['completed', 'completed', true],
             'null → pending (init)' => [null, 'pending', true],
         ];
     }
@@ -31,15 +31,15 @@ class BookingStateMachineTest extends TestCase
     public static function disallowedTransitions(): array
     {
         return [
-            'completed → pending'   => ['completed', 'pending'],
+            'completed → pending' => ['completed', 'pending'],
             'completed → cancelled' => ['completed', 'cancelled'],
-            'cancelled → paid'      => ['cancelled', 'paid'],
-            'cancelled → pending'   => ['cancelled', 'pending'],
-            'expired → paid'        => ['expired', 'paid'],
-            'expired → pending'     => ['expired', 'pending'],
-            'paid → pending'        => ['paid', 'pending'],
-            'confirmed → paid'      => ['confirmed', 'paid'],
-            'confirmed → pending'   => ['confirmed', 'pending'],
+            'cancelled → paid' => ['cancelled', 'paid'],
+            'cancelled → pending' => ['cancelled', 'pending'],
+            'expired → paid' => ['expired', 'paid'],
+            'expired → pending' => ['expired', 'pending'],
+            'paid → pending' => ['paid', 'pending'],
+            'confirmed → paid' => ['confirmed', 'paid'],
+            'confirmed → pending' => ['confirmed', 'pending'],
         ];
     }
 

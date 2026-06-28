@@ -20,7 +20,7 @@ class InvoiceController extends Controller
         $pdf = Pdf::loadView('pdf.invoice', compact('booking'))
             ->setPaper('a4', 'portrait');
 
-        $filename = 'Invoice-' . $booking->booking_code . '.pdf';
+        $filename = 'Invoice-'.$booking->booking_code.'.pdf';
 
         return $pdf->download($filename);
     }

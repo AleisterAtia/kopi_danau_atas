@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
-use Exception;
 
 class GoogleController extends Controller
 {
@@ -26,17 +25,17 @@ class GoogleController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-            
+
             // Check if user already exists
             $user = User::where('email', $googleUser->email)->first();
-            
+
             if ($user) {
                 // If user exists, just update their google_id and token
                 $user->update([
                     'google_id' => $googleUser->id,
                     'google_token' => $googleUser->token,
                     // If they registered via email but now login with google, let's auto-verify them
-                    'email_verified_at' => $user->email_verified_at ?? now(), 
+                    'email_verified_at' => $user->email_verified_at ?? now(),
                 ]);
             } else {
                 // Create a new user
@@ -62,9 +61,9 @@ class GoogleController extends Controller
 
             // Redirect to intended page or home
             return redirect()->intended(route('home'));
-            
+
         } catch (Exception $e) {
-            return redirect()->route('login')->with('error', 'Gagal melakukan login dengan Google. Silakan coba lagi. ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Gagal melakukan login dengan Google. Silakan coba lagi. '.$e->getMessage());
         }
     }
 }

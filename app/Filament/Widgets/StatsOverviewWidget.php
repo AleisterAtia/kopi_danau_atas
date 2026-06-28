@@ -43,7 +43,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->color('success')
                 ->icon('heroicon-o-ticket'),
 
-            Stat::make('Revenue This Month', 'Rp ' . number_format($data['monthRevenue'], 0, ',', '.'))
+            Stat::make('Revenue This Month', 'Rp '.number_format($data['monthRevenue'], 0, ',', '.'))
                 ->description('From settled payments')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('primary')

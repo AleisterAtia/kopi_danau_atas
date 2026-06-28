@@ -51,7 +51,7 @@ class HomepageSection extends Model
     public static function findByKey(string $key): ?self
     {
         return Cache::remember(
-            self::CACHE_KEY_PREFIX . $key,
+            self::CACHE_KEY_PREFIX.$key,
             self::CACHE_TTL,
             fn () => static::with('images')->where('section_key', $key)->first()
         );
@@ -64,7 +64,7 @@ class HomepageSection extends Model
      */
     public static function flushKey(string $key): void
     {
-        Cache::forget(self::CACHE_KEY_PREFIX . $key);
+        Cache::forget(self::CACHE_KEY_PREFIX.$key);
     }
 
     /**

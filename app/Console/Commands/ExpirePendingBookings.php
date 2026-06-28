@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class ExpirePendingBookings extends Command
 {
     protected $signature = 'bookings:expire-pending';
+
     protected $description = 'Expire pending bookings older than 1 hour to free up quota';
 
     public function handle(): int

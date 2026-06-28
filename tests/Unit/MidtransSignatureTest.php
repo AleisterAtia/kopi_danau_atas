@@ -21,9 +21,9 @@ class MidtransSignatureTest extends TestCase
         $statusCode = '200';
         $grossAmount = '500000.00';
 
-        $expected = hash('sha512', $orderId . $statusCode . $grossAmount . self::SERVER_KEY);
+        $expected = hash('sha512', $orderId.$statusCode.$grossAmount.self::SERVER_KEY);
 
-        $service = new MidtransService();
+        $service = new MidtransService;
 
         $this->assertTrue($service->verifySignature([
             'order_id' => $orderId,
@@ -35,7 +35,7 @@ class MidtransSignatureTest extends TestCase
 
     public function test_signature_fails_when_key_is_tampered(): void
     {
-        $service = new MidtransService();
+        $service = new MidtransService;
 
         $this->assertFalse($service->verifySignature([
             'order_id' => 'KDA-1-12345',
@@ -47,7 +47,7 @@ class MidtransSignatureTest extends TestCase
 
     public function test_signature_fails_when_signature_is_missing(): void
     {
-        $service = new MidtransService();
+        $service = new MidtransService;
 
         $this->assertFalse($service->verifySignature([
             'order_id' => 'KDA-1-12345',
@@ -58,7 +58,7 @@ class MidtransSignatureTest extends TestCase
 
     public function test_signature_fails_when_required_fields_missing(): void
     {
-        $service = new MidtransService();
+        $service = new MidtransService;
 
         // Missing order_id → recomputed hash will differ from any valid signature.
         $this->assertFalse($service->verifySignature([

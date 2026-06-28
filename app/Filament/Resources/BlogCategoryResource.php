@@ -13,9 +13,13 @@ use Filament\Tables\Table;
 class BlogCategoryResource extends Resource
 {
     protected static ?string $model = BlogCategory::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+
     protected static ?string $navigationGroup = 'Content';
+
     protected static ?int $navigationSort = 3;
+
     protected static ?string $navigationLabel = 'Blog Categories';
 
     public static function form(Form $form): Form

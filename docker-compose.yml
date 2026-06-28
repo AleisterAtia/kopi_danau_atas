@@ -1,0 +1,72 @@
+# Reproducible local/pilot deployment for E-Tourism CV Kopi Danau Atas.
+#
+# Four services mirror what production actually needs:
+#   app       — the web application (php artisan serve on :8000)
+#   queue     — the queue worker (without it, confirmation e-mails never send)
+#   scheduler — the cron runner (without it, quota never frees & auto-complete dies)
+#   db        — MySQL 8
+#
+# Usage:
+#   1. Copy .env.example -> .env, then set:  DB_HOST=db  DB_CONNECTION=mysql
+#      DB_DATABASE / DB_USERNAME / DB_PASSWORD (match the db service below).
+#   2. docker compose build
+#   3. docker compose run --rm app php artisan key:generate
+#   4. docker compose up -d
+#
+# See docs/deployment.md for the full walkthrough.
+
+services:
+  app:
+    build:
+      context: .
+    image: kopi-danau-atas:latest
+    env_file: .env
+    environment:
+      RUN_MIGRATIONS: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  queue:
+    build:
+      context: .
+    image: kopi-danau-atas:latest
+    env_file: .env
+    command: php artisan queue:work --tries=3 --max-time=3600
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+    image: kopi-danau-atas:latest
+    env_file: .env
+    command: php artisan schedule:work
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-kopi_danau_atas}
+      MYSQL_USER: ${DB_USERNAME:-kopi}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  dbdata:

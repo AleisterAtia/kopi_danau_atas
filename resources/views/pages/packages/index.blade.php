@@ -12,13 +12,68 @@
 
 <div class="py-12 bg-bg min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {{-- Search & filter --}}
+        <form method="GET" action="{{ route('packages.index') }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="md:col-span-5">
+                    <label for="q" class="block text-sm font-medium text-text-secondary mb-1">{{ __('Cari paket') }}</label>
+                    <input type="text" name="q" id="q" value="{{ $search }}" placeholder="{{ __('Nama atau deskripsi...') }}"
+                        class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm">
+                </div>
+                <div class="md:col-span-3">
+                    <label for="category" class="block text-sm font-medium text-text-secondary mb-1">{{ __('Kategori') }}</label>
+                    <select name="category" id="category" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm">
+                        <option value="">{{ __('Semua kategori') }}</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->slug }}" @selected($categorySlug === $category->slug)>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="price_min" class="block text-sm font-medium text-text-secondary mb-1">{{ __('Harga min') }}</label>
+                    <input type="number" min="0" step="1000" name="price_min" id="price_min" value="{{ $priceMin }}" placeholder="0"
+                        class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="price_max" class="block text-sm font-medium text-text-secondary mb-1">{{ __('Harga max') }}</label>
+                    <input type="number" min="0" step="1000" name="price_max" id="price_max" value="{{ $priceMax }}" placeholder="∞"
+                        class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm">
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4">
+                <div class="flex items-center gap-2">
+                    <label for="sort" class="text-sm font-medium text-text-secondary">{{ __('Urutkan') }}</label>
+                    <select name="sort" id="sort" class="rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-sm">
+                        <option value="latest" @selected($sort === 'latest')>{{ __('Terbaru') }}</option>
+                        <option value="price_asc" @selected($sort === 'price_asc')>{{ __('Harga termurah') }}</option>
+                        <option value="price_desc" @selected($sort === 'price_desc')>{{ __('Harga termahal') }}</option>
+                        <option value="rating" @selected($sort === 'rating')>{{ __('Rating tertinggi') }}</option>
+                        <option value="name" @selected($sort === 'name')>{{ __('Nama (A-Z)') }}</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('packages.index') }}" class="text-sm text-text-secondary hover:text-primary px-4 py-2">{{ __('Reset') }}</a>
+                    <button type="submit" class="btn-primary text-sm px-6 py-2">{{ __('Terapkan') }}</button>
+                </div>
+            </div>
+        </form>
+
+        @if(request()->hasAny(['q', 'category', 'price_min', 'price_max']))
+            <p class="text-sm text-text-secondary mb-6">{{ __('Menampilkan') }} <span class="font-semibold">{{ $packages->total() }}</span> {{ __('paket yang cocok') }}</p>
+        @endif
+
         @if($packages->isEmpty())
             <div class="text-center py-20">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('Belum ada paket wisata') }}</h3>
-                <p class="mt-1 text-sm text-gray-500">{{ __('Kami sedang menyiapkan pengalaman terbaik untuk Anda. Silakan kembali lagi nanti.') }}</p>
+                @if(request()->hasAny(['q', 'category', 'price_min', 'price_max']))
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('Tidak ada paket yang cocok') }}</h3>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('Coba ubah kata kunci atau filter Anda.') }} <a href="{{ route('packages.index') }}" class="text-primary font-medium hover:underline">{{ __('Reset filter') }}</a></p>
+                @else
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('Belum ada paket wisata') }}</h3>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('Kami sedang menyiapkan pengalaman terbaik untuk Anda. Silakan kembali lagi nanti.') }}</p>
+                @endif
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
