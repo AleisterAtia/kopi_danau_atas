@@ -6,6 +6,7 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\CoffeeVariety;
 use App\Models\HomepageSection;
+use App\Models\PackageCategory;
 use App\Models\SiteSetting;
 use App\Models\TourPackage;
 use App\Models\User;
@@ -35,9 +36,16 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        // ── Package Categories ──────────────────────────────
+        $catEdukasi = PackageCategory::create(['name' => 'Edukasi']);
+        $catPetik = PackageCategory::create(['name' => 'Petik & Olah']);
+        $catFotografi = PackageCategory::create(['name' => 'Fotografi']);
+        $catLengkap = PackageCategory::create(['name' => 'Paket Lengkap']);
+
         // ── Tour Packages ───────────────────────────────────
         TourPackage::create([
             'name' => 'Paket Petik Kopi',
+            'category_id' => $catPetik->id,
             'description' => '<p>Nikmati pengalaman memetik buah kopi langsung dari kebun kopi Arabika Solok di dataran tinggi Danau Diatas. Anda akan dipandu oleh petani lokal yang berpengalaman untuk memilih cherry kopi merah yang matang sempurna.</p><p>Paket ini mencakup tur kebun selama 2 jam, sesi foto, dan secangkir kopi segar hasil petikan sendiri.</p>',
             'price' => 75000,
             'duration_hours' => 2,
@@ -49,6 +57,7 @@ class DatabaseSeeder extends Seeder
 
         TourPackage::create([
             'name' => 'Paket Roasting Experience',
+            'category_id' => $catEdukasi->id,
             'description' => '<p>Pelajari seni menyangrai biji kopi dari para ahli roaster kami. Mulai dari green bean hingga menjadi biji kopi sangrai yang sempurna, Anda akan memahami setiap tahapan proses roasting.</p><p>Setelah sesi roasting, Anda dapat mencicipi hasil roasting sendiri melalui sesi cupping profesional.</p>',
             'price' => 150000,
             'duration_hours' => 3,
@@ -60,6 +69,7 @@ class DatabaseSeeder extends Seeder
 
         TourPackage::create([
             'name' => 'Paket Full Day Coffee Tour',
+            'category_id' => $catLengkap->id,
             'description' => '<p>Paket lengkap yang mencakup seluruh rangkaian pengalaman agrowisata kopi dari pagi hingga sore. Dimulai dengan tur kebun, dilanjutkan dengan proses pemetikan, pengolahan basah, roasting, dan diakhiri dengan sesi cupping dan makan siang bersama.</p>',
             'price' => 250000,
             'duration_hours' => 6,
@@ -71,6 +81,7 @@ class DatabaseSeeder extends Seeder
 
         TourPackage::create([
             'name' => 'Paket Sunrise Photography',
+            'category_id' => $catFotografi->id,
             'description' => '<p>Paket khusus bagi pecinta fotografi yang ingin menangkap keindahan sunrise di atas Danau Diatas dengan latar kebun kopi. Dimulai dari pukul 05.00 pagi, Anda akan diantar ke spot terbaik untuk fotografi.</p>',
             'price' => 100000,
             'duration_hours' => 3,

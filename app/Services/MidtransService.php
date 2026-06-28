@@ -48,7 +48,7 @@ class MidtransService
         // This keeps webhook correlation stable across "Pay Again" clicks.
         $orderId = ($existingPayment && $existingPayment->status === 'pending' && $existingPayment->midtrans_order_id)
             ? $existingPayment->midtrans_order_id
-            : 'KDA-' . $booking->id . '-' . time();
+            : 'KDA-'.$booking->id.'-'.time();
 
         $params = [
             'transaction_details' => [
@@ -69,7 +69,7 @@ class MidtransService
                 ],
             ],
             'callbacks' => [
-                'finish' => url('/booking/' . $booking->id),
+                'finish' => url('/booking/'.$booking->id),
             ],
         ];
 
@@ -101,9 +101,9 @@ class MidtransService
     public function verifySignature(array $notification): bool
     {
         $signatureKey = hash('sha512',
-            ($notification['order_id'] ?? '') .
-            ($notification['status_code'] ?? '') .
-            ($notification['gross_amount'] ?? '') .
+            ($notification['order_id'] ?? '').
+            ($notification['status_code'] ?? '').
+            ($notification['gross_amount'] ?? '').
             config('midtrans.server_key')
         );
 
@@ -124,6 +124,7 @@ class MidtransService
 
         if (! $orderId) {
             Log::warning('Midtrans notification without order_id', $notification);
+
             return;
         }
 
@@ -133,6 +134,7 @@ class MidtransService
             Log::warning('Midtrans notification for unknown order_id', [
                 'order_id' => $orderId,
             ]);
+
             return;
         }
 
@@ -150,6 +152,7 @@ class MidtransService
                 'transaction_id' => $incomingTransactionId,
                 'status' => $incomingStatus,
             ]);
+
             return;
         }
 
@@ -240,7 +243,7 @@ class MidtransService
             $qrPath = app(QrCodeService::class)->generate($booking);
             $booking->update(['qr_code_path' => $qrPath]);
         } catch (\Throwable $e) {
-            Log::error('Failed to generate QR code for booking ' . $booking->booking_code, [
+            Log::error('Failed to generate QR code for booking '.$booking->booking_code, [
                 'exception' => $e->getMessage(),
             ]);
         }
@@ -249,7 +252,7 @@ class MidtransService
             Mail::to($booking->guest_email ?? $booking->user->email)
                 ->queue(new BookingConfirmation($booking->fresh(), app()->getLocale()));
         } catch (\Throwable $e) {
-            Log::error('Failed to queue booking confirmation email for ' . $booking->booking_code, [
+            Log::error('Failed to queue booking confirmation email for '.$booking->booking_code, [
                 'exception' => $e->getMessage(),
             ]);
         }

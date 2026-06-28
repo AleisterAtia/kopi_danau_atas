@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 class AutoCompleteBookings extends Command
 {
     protected $signature = 'bookings:auto-complete';
+
     protected $description = 'Auto-mark bookings as completed when their visit date has passed';
 
     public function handle(): int

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\MidtransService;
-use Illuminate\Http\Request;
 use Midtrans\Transaction;
 
 class PaymentController extends Controller
@@ -13,7 +12,7 @@ class PaymentController extends Controller
     public function checkout(Booking $booking)
     {
         abort_if($booking->user_id !== auth()->id(), 403);
-        abort_if(!in_array($booking->status, ['pending']), 404);
+        abort_if(! in_array($booking->status, ['pending']), 404);
 
         $booking->load(['tourPackage', 'payment']);
 
@@ -35,7 +34,7 @@ class PaymentController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat token pembayaran: ' . $e->getMessage(),
+                'message' => 'Gagal membuat token pembayaran: '.$e->getMessage(),
             ], 500);
         }
 
@@ -52,10 +51,11 @@ class PaymentController extends Controller
 
         $payment = Payment::where('booking_id', $booking->id)->latest()->first();
 
-        if (!$payment || !$payment->midtrans_order_id) {
+        if (! $payment || ! $payment->midtrans_order_id) {
             if (request()->expectsJson()) {
                 return response()->json(['success' => false, 'message' => 'Payment not found'], 404);
             }
+
             return back()->with('error', 'Data pembayaran tidak ditemukan.');
         }
 
@@ -67,12 +67,14 @@ class PaymentController extends Controller
             if (request()->expectsJson()) {
                 return response()->json(['success' => true, 'status' => $notification['transaction_status'] ?? 'unknown']);
             }
+
             return redirect()->route('booking.show', $booking)->with('success', 'Status pembayaran berhasil diperbarui.');
         } catch (\Exception $e) {
             if (request()->expectsJson()) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
             }
-            return back()->with('error', 'Gagal mengecek status: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal mengecek status: '.$e->getMessage());
         }
     }
 }

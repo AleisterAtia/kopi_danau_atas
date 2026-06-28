@@ -21,7 +21,9 @@ use Illuminate\Support\Facades\DB;
 class UpcomingQuotaWidget extends Widget
 {
     protected static string $view = 'filament.widgets.upcoming-quota';
+
     protected int|string|array $columnSpan = 'full';
+
     protected static ?int $sort = 3;
 
     protected function getViewData(): array
@@ -58,7 +60,7 @@ class UpcomingQuotaWidget extends Widget
                 ->get();
 
             foreach ($rows as $row) {
-                $key = $row->tour_package_id . '|' . Carbon::parse($row->visit_date)->toDateString();
+                $key = $row->tour_package_id.'|'.Carbon::parse($row->visit_date)->toDateString();
                 $bookedMap[$key] = (int) $row->total;
             }
         }
@@ -67,7 +69,7 @@ class UpcomingQuotaWidget extends Widget
         foreach ($dates as $date) {
             $dateStr = $date->toDateString();
             foreach ($packages as $package) {
-                $booked = $bookedMap[$package->id . '|' . $dateStr] ?? 0;
+                $booked = $bookedMap[$package->id.'|'.$dateStr] ?? 0;
                 $available = max(0, $package->daily_capacity - $booked);
                 $utilization = $package->daily_capacity > 0
                     ? (int) round(($booked / $package->daily_capacity) * 100)

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Exceptions\PackageHasBookingsException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -15,6 +17,7 @@ class TourPackage extends Model
     protected $fillable = [
         'name',
         'slug',
+        'category_id',
         'description',
         'price',
         'duration_hours',
@@ -23,6 +26,25 @@ class TourPackage extends Model
         'is_active',
         'is_featured',
     ];
+
+    /**
+     * Block hard-deleting a package that still has bookings so its financial
+     * history (bookings + payments) is never cascade-wiped. Admins should
+     * deactivate (`is_active = false`) such packages instead. Enforced here at
+     * the model layer so it holds regardless of the DB driver (the prod FK is
+     * also RESTRICT — see the restrict_tour_package_booking_fk migration).
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (TourPackage $package) {
+            if ($package->bookings()->exists()) {
+                throw new PackageHasBookingsException(
+                    "Paket \"{$package->name}\" tidak dapat dihapus karena masih memiliki booking. ".
+                    "Nonaktifkan paket (matikan 'Active') untuk menyembunyikannya tanpa menghapus riwayat."
+                );
+            }
+        });
+    }
 
     protected function casts(): array
     {
@@ -38,6 +60,11 @@ class TourPackage extends Model
         return SlugOptions::create()
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(PackageCategory::class, 'category_id');
     }
 
     public function images(): HasMany

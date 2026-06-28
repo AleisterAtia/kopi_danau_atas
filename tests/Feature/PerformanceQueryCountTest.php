@@ -90,7 +90,7 @@ class PerformanceQueryCountTest extends TestCase
         $this->assertLessThanOrEqual(
             18,
             $count,
-            "Homepage executed {$count} DB queries; expected <= 18. " .
+            "Homepage executed {$count} DB queries; expected <= 18. ".
             'Did a controller change introduce N+1 behaviour?'
         );
     }
@@ -112,7 +112,7 @@ class PerformanceQueryCountTest extends TestCase
         $this->assertLessThanOrEqual(
             10,
             $count,
-            "Tour packages listing executed {$count} DB queries; expected <= 10. " .
+            "Tour packages listing executed {$count} DB queries; expected <= 10. ".
             'Did a controller change introduce N+1 behaviour on the package list?'
         );
     }
