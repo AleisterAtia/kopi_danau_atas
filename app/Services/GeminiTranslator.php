@@ -25,7 +25,7 @@ class GeminiTranslator
      * Translate a map of field => text in a single request, preserving HTML.
      *
      * @param  array<string, string>  $fields  e.g. ['title' => '...', 'content' => '<p>...</p>']
-     * @return array<string, string>|null  Same keys with translated values, or null on failure.
+     * @return array<string, string>|null Same keys with translated values, or null on failure.
      */
     public function translateFields(array $fields, string $from = 'Indonesian', string $to = 'English'): ?array
     {
