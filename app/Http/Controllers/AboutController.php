@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoffeeVariety;
+use App\Models\HomepageImage;
 use App\Models\HomepageSection;
+use App\Models\SiteSetting;
 
 class AboutController extends Controller
 {
@@ -17,6 +19,23 @@ class AboutController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('pages.about', compact('about', 'varieties'));
+        // Existing homepage gallery doubles as the About page gallery so admins
+        // manage one image pool, not two.
+        $gallery = HomepageImage::orderBy('sort_order')->take(8)->get();
+
+        $map = SiteSetting::map();
+        $settings = [
+            'company_name' => $map['company_name'] ?? 'CV Kopi Danau Atas',
+            'company_address' => $map['company_address'] ?? null,
+            'company_phone' => $map['company_phone'] ?? null,
+            'company_whatsapp' => $map['company_whatsapp'] ?? null,
+            'company_email' => $map['company_email'] ?? null,
+            'google_maps_embed' => $map['google_maps_embed'] ?? null,
+            'instagram_url' => $map['instagram_url'] ?? null,
+            'facebook_url' => $map['facebook_url'] ?? null,
+            'tiktok_url' => $map['tiktok_url'] ?? null,
+        ];
+
+        return view('pages.about', compact('about', 'varieties', 'gallery', 'settings'));
     }
 }
