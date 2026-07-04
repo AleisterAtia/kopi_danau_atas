@@ -12,7 +12,16 @@ class PaymentController extends Controller
     public function checkout(Booking $booking)
     {
         abort_if($booking->user_id !== auth()->id(), 403);
-        abort_if(! in_array($booking->status, ['pending']), 404);
+
+        // Only pending bookings can be paid. For anything else (paid, cancelled,
+        // expired…) send the user back to the booking detail with a message
+        // instead of a dead-end 404 — matters now that the browser Back button
+        // re-requests this URL after a successful payment.
+        if ($booking->status !== 'pending') {
+            return redirect()
+                ->route('booking.show', $booking)
+                ->with('success', __('Pesanan ini tidak lagi menunggu pembayaran.'));
+        }
 
         $booking->load(['tourPackage', 'payment']);
 
