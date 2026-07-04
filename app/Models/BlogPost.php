@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAutoTranslation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\Translatable\HasTranslations;
 
 class BlogPost extends Model
 {
-    use HasSlug;
+    use HasAutoTranslation, HasSlug, HasTranslations;
+
+    /** Columns stored as {"id": "...", "en": "..."} and resolved per app locale. */
+    public array $translatable = ['title', 'content', 'meta_title', 'meta_description'];
 
     protected $fillable = [
         'title',
@@ -34,7 +39,9 @@ class BlogPost extends Model
     {
         return SlugOptions::create()
             ->generateSlugsFrom('title')
-            ->saveSlugsTo('slug');
+            ->saveSlugsTo('slug')
+            // Keep the permalink stable now that `title` is translatable.
+            ->doNotGenerateSlugsOnUpdate();
     }
 
     public function category(): BelongsTo

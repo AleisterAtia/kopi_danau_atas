@@ -74,7 +74,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">{{ __('Kata Sandi Baru') }}</label>
-                                <input type="password" id="password" name="password" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring focus:ring-primary/20" placeholder="Minimal 8 karakter">
+                                <input type="password" id="password" name="password" class="w-full rounded-lg border-gray-300 focus:border-primary focus:ring focus:ring-primary/20" placeholder="{{ __('Minimal 8 karakter') }}">
                             </div>
                             
                             <div>

@@ -9,13 +9,15 @@
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.1",
         "filament/filament": "3.3",
+        "filament/spatie-laravel-translatable-plugin": "*",
         "laravel/framework": "^11.0",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "midtrans/midtrans-php": "^2.6",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-medialibrary": "^11.22",
-        "spatie/laravel-sluggable": "^3.8"
+        "spatie/laravel-sluggable": "^3.8",
+        "spatie/laravel-translatable": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Beranda') | {{ \App\Models\SiteSetting::getValue('company_name', 'CV Kopi Danau Atas') }}</title>
-    <meta name="description" content="@yield('meta_description', 'Agrowisata kopi edukatif di Alahan Panjang, Solok — petik kopi, roasting, dan cupping langsung di kebun Arabika Danau Diatas.')">
+    <title>@yield('title', __('Beranda')) | {{ \App\Models\SiteSetting::getValue('company_name', 'CV Kopi Danau Atas') }}</title>
+    <meta name="description" content="@yield('meta_description', __('Agrowisata kopi edukatif di Alahan Panjang, Solok — petik kopi, roasting, dan cupping langsung di kebun Arabika Danau Diatas.'))">
 
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">

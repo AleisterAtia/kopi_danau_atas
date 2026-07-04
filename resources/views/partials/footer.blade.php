@@ -32,6 +32,7 @@
                 <h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">{{ __('Navigasi') }}</h4>
                 <ul class="space-y-2.5 text-sm text-white/60">
                     <li><a href="{{ route('home') }}" class="hover:text-white transition-colors">{{ __('Beranda') }}</a></li>
+                    <li><a href="{{ route('about') }}" class="hover:text-white transition-colors">{{ __('Tentang Kami') }}</a></li>
                     <li><a href="{{ route('packages.index') }}" class="hover:text-white transition-colors">{{ __('Paket Wisata') }}</a></li>
                     <li><a href="{{ route('blog.index') }}" class="hover:text-white transition-colors">{{ __('Blog') }}</a></li>
                     @guest
@@ -65,7 +66,7 @@
 
         <div class="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
             <p class="text-xs text-white/40">&copy; {{ date('Y') }} CV Kopi Danau Atas. {{ __('Semua hak cipta dilindungi.') }}</p>
-            <p class="text-xs text-white/30">Alahan Panjang, Solok — Sumatera Barat</p>
+            <p class="text-xs text-white/30">{{ __('Alahan Panjang, Solok — Sumatera Barat') }}</p>
         </div>
     </div>
 </footer>

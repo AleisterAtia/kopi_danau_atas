@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $post->meta_title ?? $post->title)
-@section('meta_description', $post->meta_description ?? \Illuminate\Support\Str::limit(strip_tags($post->content), 160))
+@section('title', $post->meta_title ?: $post->title)
+@section('meta_description', $post->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($post->content), 160))
 
 @push('head')
     @include('partials.navbar-light-override')

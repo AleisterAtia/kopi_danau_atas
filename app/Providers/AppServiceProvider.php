@@ -13,6 +13,7 @@ use App\Observers\HomepageSectionObserver;
 use App\Observers\SiteSettingObserver;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Indonesian is the source language. When a record has no translation
+        // for the active locale (e.g. English content an admin hasn't filled
+        // yet), fall back to Indonesian instead of rendering blank. spatie v6
+        // ignores config files — fallback must be set on the service here.
+        Translatable::fallback(fallbackLocale: 'id', fallbackAny: true);
+
         // Booking lifecycle (state machine + transition logging).
         Booking::observe(BookingObserver::class);
 

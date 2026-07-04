@@ -37,56 +37,92 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ── Package Categories ──────────────────────────────
-        $catEdukasi = PackageCategory::create(['name' => 'Edukasi']);
-        $catPetik = PackageCategory::create(['name' => 'Petik & Olah']);
-        $catFotografi = PackageCategory::create(['name' => 'Fotografi']);
-        $catLengkap = PackageCategory::create(['name' => 'Paket Lengkap']);
+        $catEdukasi = PackageCategory::create(['name' => ['id' => 'Edukasi', 'en' => 'Education']]);
+        $catPetik = PackageCategory::create(['name' => ['id' => 'Petik & Olah', 'en' => 'Picking & Processing']]);
+        $catFotografi = PackageCategory::create(['name' => ['id' => 'Fotografi', 'en' => 'Photography']]);
+        $catLengkap = PackageCategory::create(['name' => ['id' => 'Paket Lengkap', 'en' => 'Complete Package']]);
 
         // ── Tour Packages ───────────────────────────────────
         TourPackage::create([
-            'name' => 'Paket Petik Kopi',
+            'name' => [
+                'id' => 'Paket Petik Kopi',
+                'en' => 'Coffee Picking Package',
+            ],
             'category_id' => $catPetik->id,
-            'description' => '<p>Nikmati pengalaman memetik buah kopi langsung dari kebun kopi Arabika Solok di dataran tinggi Danau Diatas. Anda akan dipandu oleh petani lokal yang berpengalaman untuk memilih cherry kopi merah yang matang sempurna.</p><p>Paket ini mencakup tur kebun selama 2 jam, sesi foto, dan secangkir kopi segar hasil petikan sendiri.</p>',
+            'description' => [
+                'id' => '<p>Nikmati pengalaman memetik buah kopi langsung dari kebun kopi Arabika Solok di dataran tinggi Danau Diatas. Anda akan dipandu oleh petani lokal yang berpengalaman untuk memilih cherry kopi merah yang matang sempurna.</p><p>Paket ini mencakup tur kebun selama 2 jam, sesi foto, dan secangkir kopi segar hasil petikan sendiri.</p>',
+                'en' => '<p>Enjoy the experience of picking coffee cherries straight from the Solok Arabica coffee farm in the Lake Diatas highlands. You will be guided by experienced local farmers to choose perfectly ripe red coffee cherries.</p><p>This package includes a 2-hour farm tour, a photo session, and a fresh cup of self-picked coffee.</p>',
+            ],
             'price' => 75000,
             'duration_hours' => 2,
             'daily_capacity' => 20,
-            'facilities' => "Pemandu wisata lokal\nAlat petik kopi\nSecangkir kopi gratis\nSesi foto di kebun\nSouvenir biji kopi 100g",
+            'facilities' => [
+                'id' => "Pemandu wisata lokal\nAlat petik kopi\nSecangkir kopi gratis\nSesi foto di kebun\nSouvenir biji kopi 100g",
+                'en' => "Local tour guide\nCoffee picking tools\nFree cup of coffee\nPhoto session in the farm\nCoffee bean souvenir 100g",
+            ],
             'is_active' => true,
             'is_featured' => true,
         ]);
 
         TourPackage::create([
-            'name' => 'Paket Roasting Experience',
+            'name' => [
+                'id' => 'Paket Roasting Experience',
+                'en' => 'Roasting Experience Package',
+            ],
             'category_id' => $catEdukasi->id,
-            'description' => '<p>Pelajari seni menyangrai biji kopi dari para ahli roaster kami. Mulai dari green bean hingga menjadi biji kopi sangrai yang sempurna, Anda akan memahami setiap tahapan proses roasting.</p><p>Setelah sesi roasting, Anda dapat mencicipi hasil roasting sendiri melalui sesi cupping profesional.</p>',
+            'description' => [
+                'id' => '<p>Pelajari seni menyangrai biji kopi dari para ahli roaster kami. Mulai dari green bean hingga menjadi biji kopi sangrai yang sempurna, Anda akan memahami setiap tahapan proses roasting.</p><p>Setelah sesi roasting, Anda dapat mencicipi hasil roasting sendiri melalui sesi cupping profesional.</p>',
+                'en' => '<p>Learn the art of roasting coffee beans from our expert roasters. From green beans to perfectly roasted coffee beans, you will understand every stage of the roasting process.</p><p>After the roasting session, you can taste your own roasted coffee through a professional cupping session.</p>',
+            ],
             'price' => 150000,
             'duration_hours' => 3,
             'daily_capacity' => 15,
-            'facilities' => "Peralatan roasting lengkap\nBimbingan roaster profesional\nSesi cupping\nBiji kopi hasil roasting untuk dibawa pulang (200g)\nSertifikat keikutsertaan",
+            'facilities' => [
+                'id' => "Peralatan roasting lengkap\nBimbingan roaster profesional\nSesi cupping\nBiji kopi hasil roasting untuk dibawa pulang (200g)\nSertifikat keikutsertaan",
+                'en' => "Complete roasting equipment\nProfessional roaster guidance\nCupping session\nRoasted coffee beans to take home (200g)\nCertificate of participation",
+            ],
             'is_active' => true,
             'is_featured' => true,
         ]);
 
         TourPackage::create([
-            'name' => 'Paket Full Day Coffee Tour',
+            'name' => [
+                'id' => 'Paket Full Day Coffee Tour',
+                'en' => 'Full Day Coffee Tour Package',
+            ],
             'category_id' => $catLengkap->id,
-            'description' => '<p>Paket lengkap yang mencakup seluruh rangkaian pengalaman agrowisata kopi dari pagi hingga sore. Dimulai dengan tur kebun, dilanjutkan dengan proses pemetikan, pengolahan basah, roasting, dan diakhiri dengan sesi cupping dan makan siang bersama.</p>',
+            'description' => [
+                'id' => '<p>Paket lengkap yang mencakup seluruh rangkaian pengalaman agrowisata kopi dari pagi hingga sore. Dimulai dengan tur kebun, dilanjutkan dengan proses pemetikan, pengolahan basah, roasting, dan diakhiri dengan sesi cupping dan makan siang bersama.</p>',
+                'en' => '<p>A complete package that includes the entire series of coffee agrotourism experiences from morning to afternoon. Starting with a farm tour, followed by the picking process, wet processing, roasting, and ending with a cupping session and lunch together.</p>',
+            ],
             'price' => 250000,
             'duration_hours' => 6,
             'daily_capacity' => 10,
-            'facilities' => "Tur kebun lengkap\nPetik kopi\nProses pengolahan basah (wet processing)\nSesi roasting\nSesi cupping profesional\nMakan siang tradisional\nBiji kopi oleh-oleh (250g)\nSertifikat",
+            'facilities' => [
+                'id' => "Tur kebun lengkap\nPetik kopi\nProses pengolahan basah (wet processing)\nSesi roasting\nSesi cupping profesional\nMakan siang tradisional\nBiji kopi oleh-oleh (250g)\nSertifikat",
+                'en' => "Complete farm tour\nCoffee picking\nWet processing\nRoasting session\nProfessional cupping session\nTraditional lunch\nCoffee bean souvenir (250g)\nCertificate",
+            ],
             'is_active' => true,
             'is_featured' => true,
         ]);
 
         TourPackage::create([
-            'name' => 'Paket Sunrise Photography',
+            'name' => [
+                'id' => 'Paket Sunrise Photography',
+                'en' => 'Sunrise Photography Package',
+            ],
             'category_id' => $catFotografi->id,
-            'description' => '<p>Paket khusus bagi pecinta fotografi yang ingin menangkap keindahan sunrise di atas Danau Diatas dengan latar kebun kopi. Dimulai dari pukul 05.00 pagi, Anda akan diantar ke spot terbaik untuk fotografi.</p>',
+            'description' => [
+                'id' => '<p>Paket khusus bagi pecinta fotografi yang ingin menangkap keindahan sunrise di atas Danau Diatas dengan latar kebun kopi. Dimulai dari pukul 05.00 pagi, Anda akan diantar ke spot terbaik untuk fotografi.</p>',
+                'en' => '<p>A special package for photography lovers who want to capture the beauty of the sunrise over Lake Diatas against the backdrop of a coffee farm. Starting at 05:00 AM, you will be taken to the best spots for photography.</p>',
+            ],
             'price' => 100000,
             'duration_hours' => 3,
             'daily_capacity' => 12,
-            'facilities' => "Transportasi ke spot sunrise\nPemandu foto\nKopi pagi gratis\nSnack ringan",
+            'facilities' => [
+                'id' => "Transportasi ke spot sunrise\nPemandu foto\nKopi pagi gratis\nSnack ringan",
+                'en' => "Transport to sunrise spot\nPhoto guide\nFree morning coffee\nLight snack",
+            ],
             'is_active' => true,
             'is_featured' => false,
         ]);
@@ -117,22 +153,34 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ── Blog Categories ─────────────────────────────────
-        $catKopi = BlogCategory::create(['name' => 'Jenis Kopi']);
-        $catWisata = BlogCategory::create(['name' => 'Tips Wisata']);
-        $catBerita = BlogCategory::create(['name' => 'Berita']);
+        $catKopi = BlogCategory::create(['name' => ['id' => 'Jenis Kopi', 'en' => 'Coffee Types']]);
+        $catWisata = BlogCategory::create(['name' => ['id' => 'Tips Wisata', 'en' => 'Travel Tips']]);
+        $catBerita = BlogCategory::create(['name' => ['id' => 'Berita', 'en' => 'News']]);
 
         // ── Sample Blog Posts ───────────────────────────────
         BlogPost::create([
-            'title' => 'Mengenal Varietas Kopi Arabika Solok',
-            'content' => '<p>Kopi Arabika Solok adalah salah satu jenis kopi premium yang tumbuh di dataran tinggi Sumatera Barat. Beberapa varietas unggulan yang kami budidayakan antara lain Lini-S, Gayo, dan Typica.</p><p>Setiap varietas memiliki karakteristik rasa yang unik, dipengaruhi oleh ketinggian lokasi tanam, jenis tanah vulkanik, dan proses pengolahan pasca panen yang kami terapkan.</p>',
+            'title' => [
+                'id' => 'Mengenal Varietas Kopi Arabika Solok',
+                'en' => 'Getting to Know Solok Arabica Coffee Varieties',
+            ],
+            'content' => [
+                'id' => '<p>Kopi Arabika Solok adalah salah satu jenis kopi premium yang tumbuh di dataran tinggi Sumatera Barat. Beberapa varietas unggulan yang kami budidayakan antara lain Lini-S, Gayo, dan Typica.</p><p>Setiap varietas memiliki karakteristik rasa yang unik, dipengaruhi oleh ketinggian lokasi tanam, jenis tanah vulkanik, dan proses pengolahan pasca panen yang kami terapkan.</p>',
+                'en' => '<p>Solok Arabica coffee is one of the premium coffee types grown in the highlands of West Sumatra. Some of the superior varieties we cultivate include Lini-S, Gayo, and Typica.</p><p>Each variety has a unique flavor characteristic, influenced by the altitude of the planting location, the type of volcanic soil, and the post-harvest processing we apply.</p>',
+            ],
             'category_id' => $catKopi->id,
             'status' => 'published',
             'published_at' => now(),
         ]);
 
         BlogPost::create([
-            'title' => 'Tips Berkunjung ke Agrowisata Kopi Danau Atas',
-            'content' => '<p>Berencana mengunjungi agrowisata kami? Berikut beberapa tips agar kunjungan Anda semakin menyenangkan:</p><ul><li>Kenakan pakaian dan sepatu yang nyaman untuk berjalan di kebun</li><li>Bawa kamera untuk mengabadikan momen indah</li><li>Datang pagi hari untuk menikmati udara segar dan pemandangan sunrise</li><li>Pesan tiket secara online melalui website untuk menghindari antrean</li></ul>',
+            'title' => [
+                'id' => 'Tips Berkunjung ke Agrowisata Kopi Danau Atas',
+                'en' => 'Tips for Visiting Kopi Danau Atas Agrotourism',
+            ],
+            'content' => [
+                'id' => '<p>Berencana mengunjungi agrowisata kami? Berikut beberapa tips agar kunjungan Anda semakin menyenangkan:</p><ul><li>Kenakan pakaian dan sepatu yang nyaman untuk berjalan di kebun</li><li>Bawa kamera untuk mengabadikan momen indah</li><li>Datang pagi hari untuk menikmati udara segar dan pemandangan sunrise</li><li>Pesan tiket secara online melalui website untuk menghindari antrean</li></ul>',
+                'en' => '<p>Planning to visit our agrotourism? Here are some tips to make your visit more enjoyable:</p><ul><li>Wear comfortable clothes and shoes for walking in the farm</li><li>Bring a camera to capture beautiful moments</li><li>Come in the morning to enjoy the fresh air and sunrise view</li><li>Book tickets online through the website to avoid queues</li></ul>',
+            ],
             'category_id' => $catWisata->id,
             'status' => 'published',
             'published_at' => now(),
@@ -141,8 +189,14 @@ class DatabaseSeeder extends Seeder
         // ── Homepage Sections ───────────────────────────────
         HomepageSection::create([
             'section_key' => 'hero',
-            'title' => 'Jelajahi Keindahan Agrowisata Kopi Solok',
-            'description' => 'Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas, Alahan Panjang.',
+            'title' => [
+                'id' => 'Jelajahi Keindahan Agrowisata Kopi Solok',
+                'en' => 'Explore the Beauty of Solok Coffee Agrotourism',
+            ],
+            'description' => [
+                'id' => 'Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas, Alahan Panjang.',
+                'en' => 'Experience the unique sensation of picking coffee straight from the Arabica farm in the highlands of Lake Diatas, Alahan Panjang.',
+            ],
             'extra_data' => [
                 'cta_text' => 'Pesan Sekarang',
                 'cta_url' => '/paket-wisata',
@@ -152,8 +206,14 @@ class DatabaseSeeder extends Seeder
 
         HomepageSection::create([
             'section_key' => 'about',
-            'title' => 'Tentang CV Kopi Danau Atas',
-            'description' => '<p>CV Kopi Danau Atas adalah perusahaan pengolahan dan perdagangan kopi Arabika Solok yang berlokasi di kawasan strategis Danau Diatas, Alahan Panjang. Kami menawarkan pengalaman agrowisata yang memadukan keindahan alam dataran tinggi dengan edukasi proses produksi kopi dari hulu ke hilir.</p>',
+            'title' => [
+                'id' => 'Tentang CV Kopi Danau Atas',
+                'en' => 'About CV Kopi Danau Atas',
+            ],
+            'description' => [
+                'id' => '<p>CV Kopi Danau Atas adalah perusahaan pengolahan dan perdagangan kopi Arabika Solok yang berlokasi di kawasan strategis Danau Diatas, Alahan Panjang. Kami menawarkan pengalaman agrowisata yang memadukan keindahan alam dataran tinggi dengan edukasi proses produksi kopi dari hulu ke hilir.</p>',
+                'en' => '<p>CV Kopi Danau Atas is a Solok Arabica coffee processing and trading company located in the strategic area of Lake Diatas, Alahan Panjang. We offer an agrotourism experience combining the natural beauty of the highlands with education on the coffee production process from upstream to downstream.</p>',
+            ],
             'extra_data' => [
                 'cta_text' => 'Lihat Selengkapnya',
                 'cta_url' => '/paket-wisata',
@@ -163,8 +223,14 @@ class DatabaseSeeder extends Seeder
 
         HomepageSection::create([
             'section_key' => 'education',
-            'title' => 'Pengalaman Edukasi Kopi',
-            'description' => 'Pelajari proses produksi kopi dari pohon hingga secangkir kopi yang nikmat. Kami menyediakan berbagai kegiatan edukasi yang interaktif dan menyenangkan.',
+            'title' => [
+                'id' => 'Pengalaman Edukasi Kopi',
+                'en' => 'Coffee Education Experience',
+            ],
+            'description' => [
+                'id' => 'Pelajari proses produksi kopi dari pohon hingga secangkir kopi yang nikmat. Kami menyediakan berbagai kegiatan edukasi yang interaktif dan menyenangkan.',
+                'en' => 'Learn the coffee production process from the tree to a delicious cup of coffee. We provide various interactive and fun educational activities.',
+            ],
             'extra_data' => [
                 'bullet_1' => 'Lebih dari 500 wisatawan puas dengan pengalaman edukasi kami',
                 'bullet_2' => 'Dipandu langsung oleh petani kopi berpengalaman',
@@ -174,8 +240,14 @@ class DatabaseSeeder extends Seeder
 
         HomepageSection::create([
             'section_key' => 'testimonials',
-            'title' => 'Apa Kata Pengunjung?',
-            'description' => 'Dengarkan pengalaman dari mereka yang sudah berkunjung ke agrowisata kami.',
+            'title' => [
+                'id' => 'Apa Kata Pengunjung?',
+                'en' => 'What Visitors Say?',
+            ],
+            'description' => [
+                'id' => 'Dengarkan pengalaman dari mereka yang sudah berkunjung ke agrowisata kami.',
+                'en' => 'Listen to the experiences of those who have visited our agrotourism.',
+            ],
             'sort_order' => 4,
         ]);
 

@@ -11,13 +11,13 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full hero-content py-32 lg:py-40">
         <div class="max-w-2xl">
             <p class="text-white/70 text-sm font-semibold tracking-widest uppercase mb-5 anim-fade-up" style="animation-delay:.1s">
-                Agrowisata &bull; Edukasi &bull; Kopi Arabika
+                {{ __('Agrowisata') }} &bull; {{ __('Edukasi') }} &bull; {{ __('Kopi Arabika') }}
             </p>
             <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.15] mb-6 anim-fade-up" style="animation-delay:.2s">
-                {{ __($hero->title ?? 'Jelajahi Keindahan Agrowisata Kopi Solok') }}
+                {{ $hero->title ?? __('Jelajahi Keindahan Agrowisata Kopi Solok') }}
             </h1>
             <p class="text-lg text-white/80 leading-relaxed mb-10 max-w-xl anim-fade-up" style="animation-delay:.3s">
-                {{ __($hero->description ?? 'Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas.') }}
+                {{ $hero->description ?? __('Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas.') }}
             </p>
             <div class="flex flex-wrap gap-4 anim-fade-up" style="animation-delay:.4s">
                 <a href="{{ $hero->extra_data['cta_url'] ?? route('packages.index') }}" class="btn btn-primary btn-lg !bg-white !text-primary !border-white hover:!bg-primary-50">
@@ -75,12 +75,12 @@
             {{-- Text side --}}
             <div>
                 <span class="section-label mb-4">{{ __('Tentang Kami') }}</span>
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-text mt-3 mb-6">{{ __($about->title) }}</h2>
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-text mt-3 mb-6">{{ $about->title }}</h2>
                 <div class="prose-content text-base mb-8">
-                    {!! __($about->description) !!}
+                    {!! $about->description !!}
                 </div>
-                <a href="{{ $about->extra_data['cta_url'] ?? route('packages.index') }}" class="btn btn-outline">
-                    {{ __($about->extra_data['cta_text'] ?? 'Lihat Paket Wisata') }}
+                <a href="{{ route('about') }}" class="btn btn-outline">
+                    {{ __($about->extra_data['cta_text'] ?? 'Lihat Selengkapnya') }}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                 </a>
             </div>
@@ -126,21 +126,21 @@
                     <div class="flex items-center gap-3 text-xs text-text-secondary mb-3">
                         <span class="flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            {{ $package->duration_hours }} jam
+                            {{ $package->duration_hours }} {{ __('jam') }}
                         </span>
                         <span class="flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            Maks. {{ $package->daily_capacity }}
+                            {{ __('Maks.') }} {{ $package->daily_capacity }}
                         </span>
                     </div>
 
-                    <h3 class="text-lg font-bold text-text mb-1.5 group-hover:text-primary transition-colors">{{ __($package->name) }}</h3>
-                    <p class="text-sm text-text-secondary line-clamp-2 mb-4 flex-grow">{!! strip_tags(__($package->description)) !!}</p>
+                    <h3 class="text-lg font-bold text-text mb-1.5 group-hover:text-primary transition-colors">{{ $package->name }}</h3>
+                    <p class="text-sm text-text-secondary line-clamp-2 mb-4 flex-grow">{!! strip_tags($package->description) !!}</p>
 
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                         <span class="text-lg font-bold text-primary">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
                         <span class="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                            Detail
+                            {{ __('Detail') }}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </span>
                     </div>
@@ -181,9 +181,9 @@
             {{-- Text --}}
             <div class="order-1 lg:order-2">
                 <span class="section-label mb-4 !text-accent-warm before:!bg-accent-warm">{{ __('Edukasi') }}</span>
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-white mt-3 mb-6">{{ __($education->title) }}</h2>
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-white mt-3 mb-6">{{ $education->title }}</h2>
                 <div class="prose-content text-white/75 text-base mb-8">
-                    {!! __($education->description) !!}
+                    {!! $education->description !!}
                 </div>
 
                 @if(isset($education->extra_data) && is_array($education->extra_data))
@@ -222,8 +222,8 @@
             {{-- Left heading --}}
             <div class="lg:col-span-2">
                 <span class="section-label mb-4">{{ __('Testimoni') }}</span>
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-text mt-3 mb-4">{{ __($testimonials->title ?? 'Apa Kata Pengunjung?') }}</h2>
-                <p class="text-text-secondary leading-relaxed mb-6">{{ __($testimonials->description ?? 'Pengalaman berharga dari mereka yang telah berkunjung ke agrowisata kami.') }}</p>
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-text mt-3 mb-4">{{ $testimonials->title ?? __('Apa Kata Pengunjung?') }}</h2>
+                <p class="text-text-secondary leading-relaxed mb-6">{{ $testimonials->description ?? __('Pengalaman berharga dari mereka yang telah berkunjung ke agrowisata kami.') }}</p>
 
                 @if($approvedReviews->count() > 1)
                 <div class="flex items-center gap-4">
@@ -261,7 +261,7 @@
                                 </div>
                                 <div>
                                     <p class="font-semibold text-text text-sm">{{ $review->user->name }}</p>
-                                    <p class="text-text-muted text-xs">{{ __($review->tourPackage->name) }}</p>
+                                    <p class="text-text-muted text-xs">{{ $review->tourPackage->name }}</p>
                                 </div>
                             </div>
                         </div>

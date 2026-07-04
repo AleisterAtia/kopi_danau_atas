@@ -2,12 +2,24 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAutoTranslation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Translatable\HasTranslations;
 
 class HomepageSection extends Model
 {
+    use HasAutoTranslation, HasTranslations;
+
+    /**
+     * Only the long-form content columns are translatable. `extra_data`
+     * (cta_text, bullets) stays a plain array — those are short generic
+     * labels resolved via the __() lang files, not per-record prose.
+     * ponytail: extra_data via lang files, revisit if it grows unique copy.
+     */
+    public array $translatable = ['title', 'description'];
+
     /**
      * Cache key prefix for homepage sections looked up by section_key.
      * The full key is `homepage_sections.{section_key}`.

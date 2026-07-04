@@ -6,12 +6,15 @@ use App\Filament\Resources\CoffeeVarietyResource\Pages;
 use App\Models\CoffeeVariety;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class CoffeeVarietyResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = CoffeeVariety::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-beaker';

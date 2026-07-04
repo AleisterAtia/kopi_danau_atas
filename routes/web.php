@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HomeController;
@@ -25,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/tentang-kami', [AboutController::class, 'index'])->name('about');
 Route::get('/paket-wisata', [TourPackageController::class, 'index'])->name('packages.index');
 Route::get('/paket-wisata/{slug}', [TourPackageController::class, 'show'])->name('packages.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
