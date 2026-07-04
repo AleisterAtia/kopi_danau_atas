@@ -6,12 +6,15 @@ use App\Filament\Resources\PackageCategoryResource\Pages;
 use App\Models\PackageCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class PackageCategoryResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = PackageCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';

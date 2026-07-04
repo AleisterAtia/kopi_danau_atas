@@ -118,7 +118,7 @@
                                 });
                             },
                             onError: function(result){
-                                alert('Pembayaran gagal!');
+                                alert(@js(__('Pembayaran gagal!')));
                                 console.log(result);
                             },
                             onClose: function(){
@@ -126,12 +126,12 @@
                             }
                         });
                     } else {
-                        alert('Gagal mendapatkan token pembayaran.');
+                        alert(@js(__('Gagal mendapatkan token pembayaran.')));
                     }
                 })
                 .catch(error => {
                     this.loading = false;
-                    alert('Terjadi kesalahan sistem.');
+                    alert(@js(__('Terjadi kesalahan sistem.')));
                     console.error(error);
                 });
             }

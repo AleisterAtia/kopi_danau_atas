@@ -3,16 +3,21 @@
 namespace App\Models;
 
 use App\Exceptions\PackageHasBookingsException;
+use App\Models\Concerns\HasAutoTranslation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\Translatable\HasTranslations;
 
 class TourPackage extends Model
 {
-    use HasFactory, HasSlug;
+    use HasAutoTranslation, HasFactory, HasSlug, HasTranslations;
+
+    /** Columns stored as {"id": "...", "en": "..."} and resolved per app locale. */
+    public array $translatable = ['name', 'description', 'facilities'];
 
     protected $fillable = [
         'name',
@@ -59,7 +64,11 @@ class TourPackage extends Model
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')
-            ->saveSlugsTo('slug');
+            ->saveSlugsTo('slug')
+            // Keep the permalink stable: `name` is now translatable, so
+            // regenerating on update would rebuild the slug from whichever
+            // locale is active when an admin edits a translation.
+            ->doNotGenerateSlugsOnUpdate();
     }
 
     public function category(): BelongsTo

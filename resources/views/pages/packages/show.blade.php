@@ -77,16 +77,16 @@
                     <div class="flex flex-wrap gap-4 mb-8">
                         <div class="flex items-center text-text-secondary bg-gray-50 px-4 py-2 rounded-lg">
                             <svg class="w-5 h-5 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span class="font-medium">{{ $package->duration_hours }} Jam</span>
+                            <span class="font-medium">{{ $package->duration_hours }} {{ __('Jam') }}</span>
                         </div>
                         <div class="flex items-center text-text-secondary bg-gray-50 px-4 py-2 rounded-lg">
                             <svg class="w-5 h-5 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <span class="font-medium">Maks. {{ $package->daily_capacity }} Orang/Hari</span>
+                            <span class="font-medium">{{ __('Maks.') }} {{ $package->daily_capacity }} {{ __('Orang/Hari') }}</span>
                         </div>
                         <div class="flex items-center text-text-secondary bg-gray-50 px-4 py-2 rounded-lg">
                             <span class="text-warning text-lg mr-1">★</span>
                             <span class="font-bold mr-1">{{ $package->averageRating > 0 ? $package->averageRating : '-' }}</span>
-                            <span>({{ $package->reviews->count() }} Ulasan)</span>
+                            <span>({{ $package->reviews->count() }} {{ __('Ulasan') }})</span>
                         </div>
                     </div>
 
@@ -154,7 +154,7 @@
                     <div class="mb-6 pb-6 border-b border-gray-100">
                         <span class="text-sm text-gray-500 uppercase tracking-wider font-semibold">{{ __('Harga Paket') }}</span>
                         <div class="text-3xl font-bold text-primary font-heading mt-1">
-                            Rp {{ number_format($package->price, 0, ',', '.') }}<span class="text-sm text-gray-500 font-normal">/orang</span>
+                            Rp {{ number_format($package->price, 0, ',', '.') }}<span class="text-sm text-gray-500 font-normal">{{ __('/orang') }}</span>
                         </div>
                     </div>
 
@@ -188,9 +188,9 @@
                                 <div class="flex justify-between mb-1">
                                     <label class="block text-sm font-medium text-gray-700">{{ __('Jumlah Orang') }}</label>
                                     <span class="text-xs text-primary font-medium" x-show="visitDate && !checking">
-                                        Sisa: <span x-text="available"></span>
+                                        {{ __('Sisa:') }} <span x-text="available"></span>
                                     </span>
-                                    <span class="text-xs text-gray-400" x-show="checking">Mengecek...</span>
+                                    <span class="text-xs text-gray-400" x-show="checking">{{ __('Mengecek...') }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <button type="button" @click="if(guestCount > 1) guestCount--" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-l-lg hover:bg-gray-200">-</button>

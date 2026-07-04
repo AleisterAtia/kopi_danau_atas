@@ -157,7 +157,7 @@
                                     <h3 class="font-bold text-gray-900">{{ $booking->tourPackage->name }}</h3>
                                     <p class="text-sm text-gray-500 flex items-center mt-1">
                                         <svg class="w-4 h-4 mr-1 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        {{ $booking->tourPackage->duration_hours }} Jam
+                                        {{ $booking->tourPackage->duration_hours }} {{ __('Jam') }}
                                     </p>
                                 </div>
                             </div>
@@ -169,7 +169,7 @@
                                 </div>
                                 <div>
                                     <span class="block text-xs text-gray-500 uppercase">{{ __('Jumlah Peserta') }}</span>
-                                    <span class="font-medium text-gray-900">{{ $booking->guest_count }} Orang</span>
+                                    <span class="font-medium text-gray-900">{{ $booking->guest_count }} {{ __('Orang') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -191,9 +191,9 @@
 
                         @if($booking->payment)
                         <div class="mt-4 text-sm text-gray-600">
-                            <p class="mb-1"><strong>Metode:</strong> {{ strtoupper(str_replace('_', ' ', $booking->payment->payment_type)) }}</p>
+                            <p class="mb-1"><strong>{{ __('Metode:') }}</strong> {{ strtoupper(str_replace('_', ' ', $booking->payment->payment_type)) }}</p>
                             @if($booking->payment->paid_at)
-                            <p><strong>Dibayar Pada:</strong> {{ \Carbon\Carbon::parse($booking->payment->paid_at)->format('d M Y H:i') }}</p>
+                            <p><strong>{{ __('Dibayar Pada:') }}</strong> {{ \Carbon\Carbon::parse($booking->payment->paid_at)->format('d M Y H:i') }}</p>
                             @endif
                         </div>
                         @endif
@@ -269,7 +269,7 @@
 
                             <div>
                                 <label for="comment" class="block text-sm font-medium text-gray-700 mb-2">{{ __('Bagaimana pengalaman Anda?') }}</label>
-                                <textarea id="comment" name="comment" rows="4" required class="block w-full rounded-lg border-gray-300 focus:ring-primary focus:border-primary shadow-sm" placeholder="Tuliskan pengalaman Anda mengikuti paket wisata ini... (min. 10 karakter)"></textarea>
+                                <textarea id="comment" name="comment" rows="4" required class="block w-full rounded-lg border-gray-300 focus:ring-primary focus:border-primary shadow-sm" placeholder="{{ __('Tuliskan pengalaman Anda mengikuti paket wisata ini... (min. 10 karakter)') }}"></textarea>
                             </div>
 
                             <button type="submit" class="btn-primary">

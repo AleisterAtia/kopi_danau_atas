@@ -5,13 +5,19 @@ namespace App\Filament\Resources\CoffeeVarietyResource\Pages;
 use App\Filament\Resources\CoffeeVarietyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ListRecords\Concerns\Translatable;
 
 class ListCoffeeVarieties extends ListRecords
 {
+    use Translatable;
+
     protected static string $resource = CoffeeVarietyResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()];
+        return [
+            Actions\LocaleSwitcher::make(),
+            Actions\CreateAction::make(),
+        ];
     }
 }
