@@ -25,7 +25,7 @@ class AboutController extends Controller
 
         $map = SiteSetting::map();
         $settings = [
-            'company_name' => $map['company_name'] ?? 'CV Kopi Danau Atas',
+            'company_name' => $map['company_name'] ?? 'CV Kopi Danau Diatas',
             'company_address' => $map['company_address'] ?? null,
             'company_phone' => $map['company_phone'] ?? null,
             'company_whatsapp' => $map['company_whatsapp'] ?? null,

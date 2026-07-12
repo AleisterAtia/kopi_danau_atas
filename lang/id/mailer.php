@@ -40,7 +40,7 @@ return [
     'reminder_contact_us' => 'Jika ada pertanyaan, jangan ragu menghubungi kami.',
 
     'salutation_thanks' => 'Terima kasih,',
-    'salutation_team' => 'Tim Kopi Danau Atas',
+    'salutation_team' => 'Tim Kopi Danau Diatas',
 
     'footer_auto_message' => 'Email ini dikirim otomatis. Mohon jangan membalas email ini.',
 ];

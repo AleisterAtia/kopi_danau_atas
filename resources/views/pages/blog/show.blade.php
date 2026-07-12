@@ -61,7 +61,7 @@
         </header>
 
         @if($post->thumbnail)
-            <div class="rounded-2xl overflow-hidden shadow-sm mb-10 aspect-[16/9]">
+            <div class="rounded-xl overflow-hidden shadow-sm mb-10 aspect-[16/9]">
                 <img src="{{ Storage::url($post->thumbnail) }}" alt="{{ $post->title }}" class="w-full h-full object-cover">
             </div>
         @endif
@@ -105,7 +105,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @foreach($relatedPosts as $related)
-            <article class="bg-white rounded-2xl overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
+            <article class="card overflow-hidden">
                 <a href="{{ route('blog.show', $related->slug) }}" class="relative aspect-[16/10] overflow-hidden block group">
                     @if($related->thumbnail)
                         <img src="{{ Storage::url($related->thumbnail) }}" alt="{{ $related->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">

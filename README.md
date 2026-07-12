@@ -1,6 +1,6 @@
-# E-Tourism Information System — CV Kopi Danau Atas
+# E-Tourism Information System — CV Kopi Danau Diatas
 
-Sistem informasi e-tourism untuk CV Kopi Danau Atas: katalog paket wisata kebun
+Sistem informasi e-tourism untuk CV Kopi Danau Diatas: katalog paket wisata kebun
 kopi, pemesanan (booking) dengan kuota harian, pembayaran via **Midtrans Snap**,
 e-ticket QR + invoice PDF, ulasan, dan panel admin **Filament**.
 

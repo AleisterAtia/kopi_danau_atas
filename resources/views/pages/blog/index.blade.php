@@ -44,7 +44,7 @@
                 {{-- Featured post --}}
                 @if($featured && !$search && !$categorySlug)
                 <a href="{{ route('blog.show', $featured->slug) }}"
-                   class="relative block rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group aspect-[16/10]">
+                   class="relative block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group aspect-[16/10]">
                     @if($featured->thumbnail)
                         <img src="{{ Storage::url($featured->thumbnail) }}" alt="{{ $featured->title }}"
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
@@ -90,7 +90,7 @@
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ route('blog.index', request()->only('search')) }}"
                        class="px-4 py-2 rounded-full text-sm font-medium transition-colors
-                              {{ !$categorySlug ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-gray-100 border border-border' }}">
+                              {{ !$categorySlug ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-bg-warm border border-border' }}">
                         {{ __('Semua') }}
                     </a>
 
@@ -98,7 +98,7 @@
                         @if($category->posts_count > 0)
                             <a href="{{ route('blog.index', array_merge(request()->only('search'), ['category' => $category->slug])) }}"
                                class="px-4 py-2 rounded-full text-sm font-medium transition-colors
-                                      {{ $categorySlug === $category->slug ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-gray-100 border border-border' }}">
+                                      {{ $categorySlug === $category->slug ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-bg-warm border border-border' }}">
                                 {{ $category->name }}
                             </a>
                         @endif
@@ -123,7 +123,7 @@
 
                 {{-- Posts grid --}}
                 @if($posts->isEmpty())
-                    <div class="text-center py-16 bg-white rounded-2xl border border-border">
+                    <div class="text-center py-16 bg-white rounded-xl border border-border">
                         <svg class="mx-auto h-12 w-12 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5L18.5 8M6 12h12M6 16h12M6 8h12" />
                         </svg>
@@ -133,7 +133,7 @@
                 @else
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         @foreach($posts as $post)
-                        <article class="bg-white rounded-2xl overflow-hidden border border-border hover:shadow-lg transition-all duration-300 flex flex-col">
+                        <article class="card overflow-hidden flex flex-col">
                             <a href="{{ route('blog.show', $post->slug) }}" class="relative aspect-[16/10] overflow-hidden block group">
                                 @if($post->thumbnail)
                                     <img src="{{ Storage::url($post->thumbnail) }}" alt="{{ $post->title }}"
@@ -190,7 +190,7 @@
             <aside class="space-y-6 lg:sticky lg:top-24 self-start">
 
                 {{-- Search --}}
-                <div class="bg-white rounded-2xl border border-border p-5">
+                <div class="bg-white rounded-xl border border-border p-5">
                     <h3 class="font-bold text-text font-heading mb-3">{{ __('Cari Artikel') }}</h3>
                     <form action="{{ route('blog.index') }}" method="GET" class="relative">
                         @if($categorySlug)
@@ -206,7 +206,7 @@
                 </div>
 
                 {{-- CTA Booking --}}
-                <div class="rounded-2xl p-6 text-white relative overflow-hidden"
+                <div class="rounded-xl p-6 text-white relative overflow-hidden"
                      style="background: linear-gradient(135deg, #2D6A4F 0%, #40916C 100%);">
                     <div class="relative z-10 text-center">
                         <div class="w-12 h-12 rounded-full bg-white/15 mx-auto flex items-center justify-center mb-3">
@@ -227,7 +227,7 @@
 
                 {{-- Popular categories --}}
                 @if($popularCategories->isNotEmpty())
-                <div class="bg-white rounded-2xl border border-border p-5">
+                <div class="bg-white rounded-xl border border-border p-5">
                     <h3 class="font-bold text-text font-heading mb-3">{{ __('Kategori Populer') }}</h3>
                     <ul class="divide-y divide-border">
                         @foreach($popularCategories as $cat)
@@ -250,7 +250,7 @@
                 @endif
 
                 {{-- Newsletter --}}
-                <div class="bg-white rounded-2xl border border-border p-5">
+                <div class="bg-white rounded-xl border border-border p-5">
                     <h3 class="font-bold text-text font-heading mb-1">{{ __('Berlangganan Info') }}</h3>
                     <p class="text-sm text-text-secondary mb-4">
                         {{ __('Dapatkan update artikel terbaru seputar kopi dan promo tur langsung ke email Anda.') }}

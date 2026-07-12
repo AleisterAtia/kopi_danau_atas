@@ -9,7 +9,7 @@
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-bg-warm py-24 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-white rounded-xl border border-border overflow-hidden">
             <div class="p-8">
                 <div class="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -39,7 +39,7 @@
 
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
-                        <button type="submit" class="btn btn-outline w-full !border-gray-200 !text-text-secondary hover:!bg-gray-50 hover:!text-text">
+                        <button type="submit" class="btn btn-outline w-full !border-border !text-text-secondary hover:!bg-bg-warm hover:!text-text">
                             {{ __('Keluar Akun') }}
                         </button>
                     </form>

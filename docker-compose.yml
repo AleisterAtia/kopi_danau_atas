@@ -1,4 +1,4 @@
-# Reproducible local/pilot deployment for E-Tourism CV Kopi Danau Atas.
+# Reproducible local/pilot deployment for E-Tourism CV Kopi Danau Diatas.
 #
 # Four services mirror what production actually needs:
 #   app       — the web application (php artisan serve on :8000)

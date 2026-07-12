@@ -52,7 +52,7 @@ class HomeController extends Controller
         // DB read on cold start and zero on subsequent renders.
         $settingsMap = SiteSetting::map();
         $settings = [
-            'company_name' => $settingsMap['company_name'] ?? 'CV Kopi Danau Atas',
+            'company_name' => $settingsMap['company_name'] ?? 'CV Kopi Danau Diatas',
             'company_address' => $settingsMap['company_address'] ?? null,
             'company_phone' => $settingsMap['company_phone'] ?? null,
             'company_email' => $settingsMap['company_email'] ?? null,

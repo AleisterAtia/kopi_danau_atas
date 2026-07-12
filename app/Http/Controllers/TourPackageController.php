@@ -11,7 +11,9 @@ class TourPackageController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->query('q', ''));
-        $categorySlug = $request->query('category');
+        // Accept category as array (checkbox filter) or a single slug string
+        // from legacy links; (array) cast normalises both to a list.
+        $categorySlugs = array_values(array_filter((array) $request->query('category', [])));
         $priceMin = $request->query('price_min');
         $priceMax = $request->query('price_max');
         $sort = $request->query('sort', 'latest');
@@ -31,8 +33,8 @@ class TourPackageController extends Controller
             });
         }
 
-        if ($categorySlug) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
+        if (! empty($categorySlugs)) {
+            $query->whereHas('category', fn ($q) => $q->whereIn('slug', $categorySlugs));
         }
 
         if (is_numeric($priceMin)) {
@@ -60,7 +62,7 @@ class TourPackageController extends Controller
             'packages',
             'categories',
             'search',
-            'categorySlug',
+            'categorySlugs',
             'priceMin',
             'priceMax',
             'sort'

@@ -24,11 +24,11 @@
                 </li>
             </ol>
         </nav>
-        <h1 class="text-4xl md:text-5xl font-bold text-white font-heading">{{ $package->name }}</h1>
+        <h1 class="text-4xl md:text-5xl font-bold text-white font-heading tracking-[-0.02em]">{{ $package->name }}</h1>
     </div>
 </div>
 
-<div class="py-12 bg-bg min-h-screen" x-data="{ 
+<div class="py-16 lg:py-20 bg-bg-warm min-h-screen" x-data="{
         visitDate: '', 
         guestCount: 1, 
         capacity: {{ $package->daily_capacity }}, 
@@ -56,7 +56,7 @@
             <div class="lg:col-span-2 space-y-8">
                 <!-- Gallery -->
                 @if($package->images->count() > 0)
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm" x-data="{ mainImage: '{{ Storage::url($package->images->first()->image_path) }}' }">
+                <div class="bg-white rounded-xl border border-border overflow-hidden" x-data="{ mainImage: '{{ Storage::url($package->images->first()->image_path) }}' }">
                     <div class="aspect-[16/9] w-full">
                         <img :src="mainImage" alt="{{ $package->name }}" class="w-full h-full object-cover transition-opacity duration-300">
                     </div>
@@ -73,17 +73,17 @@
                 @endif
 
                 <!-- Description & Info -->
-                <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm">
+                <div class="bg-white rounded-xl border border-border p-6 md:p-8">
                     <div class="flex flex-wrap gap-4 mb-8">
-                        <div class="flex items-center text-text-secondary bg-gray-50 px-4 py-2 rounded-lg">
+                        <div class="flex items-center text-text-secondary bg-bg-warm border border-border px-4 py-2 rounded-lg">
                             <svg class="w-5 h-5 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="font-medium">{{ $package->duration_hours }} {{ __('Jam') }}</span>
                         </div>
-                        <div class="flex items-center text-text-secondary bg-gray-50 px-4 py-2 rounded-lg">
+                        <div class="flex items-center text-text-secondary bg-bg-warm border border-border px-4 py-2 rounded-lg">
                             <svg class="w-5 h-5 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             <span class="font-medium">{{ __('Maks.') }} {{ $package->daily_capacity }} {{ __('Orang/Hari') }}</span>
                         </div>
-                        <div class="flex items-center text-text-secondary bg-gray-50 px-4 py-2 rounded-lg">
+                        <div class="flex items-center text-text-secondary bg-bg-warm border border-border px-4 py-2 rounded-lg">
                             <span class="text-warning text-lg mr-1">★</span>
                             <span class="font-bold mr-1">{{ $package->averageRating > 0 ? $package->averageRating : '-' }}</span>
                             <span>({{ $package->reviews->count() }} {{ __('Ulasan') }})</span>
@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Reviews -->
-                <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm">
+                <div class="bg-white rounded-xl border border-border p-6 md:p-8">
                     <h2 class="text-2xl font-bold font-heading mb-6">{{ __('Ulasan Pengunjung') }}</h2>
                     
                     @if($package->reviews->isEmpty())
@@ -119,7 +119,7 @@
                     @else
                         <div class="space-y-6">
                             @foreach($package->reviews as $review)
-                            <div class="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+                            <div class="border-b border-border last:border-0 pb-6 last:pb-0">
                                 <div class="flex items-start justify-between mb-2">
                                     <div class="flex items-center">
                                         @if($review->user->avatar)
@@ -150,8 +150,8 @@
 
             <!-- Booking Widget -->
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sticky top-28">
-                    <div class="mb-6 pb-6 border-b border-gray-100">
+                <div class="bg-white rounded-xl shadow-sm border border-border p-6 sticky top-28">
+                    <div class="mb-6 pb-6 border-b border-border">
                         <span class="text-sm text-gray-500 uppercase tracking-wider font-semibold">{{ __('Harga Paket') }}</span>
                         <div class="text-3xl font-bold text-primary font-heading mt-1">
                             Rp {{ number_format($package->price, 0, ',', '.') }}<span class="text-sm text-gray-500 font-normal">{{ __('/orang') }}</span>
@@ -200,7 +200,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-bg rounded-lg p-4 mb-6" x-show="visitDate && guestCount > 0">
+                        <div class="bg-bg-warm border border-border rounded-lg p-4 mb-6" x-show="visitDate && guestCount > 0">
                             <div class="flex justify-between text-sm mb-2">
                                 <span class="text-gray-600" x-text="`${guestCount} x Rp {{ number_format($package->price, 0, ',', '.') }}`"></span>
                                 <span class="font-medium text-gray-900" x-text="`Rp ${new Intl.NumberFormat('id-ID').format(guestCount * price)}`"></span>

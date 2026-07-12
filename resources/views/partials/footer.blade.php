@@ -4,7 +4,7 @@
 
             {{-- Brand --}}
             <div class="lg:col-span-1">
-                <h3 class="text-lg font-bold text-white mb-3 tracking-tight">Kopi Danau Atas</h3>
+                <h3 class="text-lg font-bold text-white mb-3 tracking-tight">Kopi Danau Diatas</h3>
                 <p class="text-sm text-white/60 leading-relaxed mb-5">
                     {{ __('Agrowisata kopi edukatif yang memadukan keindahan alam Solok dengan cita rasa kopi Arabika premium langsung dari kebun kami.') }}
                 </p>
@@ -65,8 +65,8 @@
         </div>
 
         <div class="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <p class="text-xs text-white/40">&copy; {{ date('Y') }} CV Kopi Danau Atas. {{ __('Semua hak cipta dilindungi.') }}</p>
-            <p class="text-xs text-white/30">{{ __('Alahan Panjang, Solok — Sumatera Barat') }}</p>
+            <p class="text-xs text-white/40">&copy; {{ date('Y') }} CV Kopi Danau Diatas. {{ __('Semua hak cipta dilindungi.') }}</p>
+            <p class="text-xs text-white/30">{{ __('Danau Diatas, Kabupaten Solok — Sumatera Barat') }}</p>
         </div>
     </div>
 </footer>

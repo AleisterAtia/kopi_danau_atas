@@ -130,7 +130,7 @@ class DatabaseSeeder extends Seeder
         // ── Coffee Varieties ────────────────────────────────
         CoffeeVariety::create([
             'name' => 'Lini-S',
-            'origin' => 'Alahan Panjang, Solok',
+            'origin' => 'Danau Diatas, Kabupaten Solok',
             'description' => '<p>Lini-S adalah varietas kopi Arabika unggulan yang dikembangkan khusus untuk dataran tinggi Sumatera Barat. Memiliki ketahanan yang baik terhadap penyakit karat daun dan menghasilkan produksi yang stabil.</p>',
             'flavor_profile' => 'Body tebal, keasaman medium, aroma cokelat dan rempah, aftertaste manis karamel',
             'is_active' => true,
@@ -139,7 +139,7 @@ class DatabaseSeeder extends Seeder
         CoffeeVariety::create([
             'name' => 'Gayo',
             'origin' => 'Aceh (ditanam di Alahan Panjang)',
-            'description' => '<p>Kopi Arabika Gayo yang terkenal di seluruh dunia, kini juga dibudidayakan di kebun CV Kopi Danau Atas. Tumbuh optimal di ketinggian 1.400 mdpl dengan iklim sejuk Danau Diatas.</p>',
+            'description' => '<p>Kopi Arabika Gayo yang terkenal di seluruh dunia, kini juga dibudidayakan di kebun CV Kopi Danau Diatas. Tumbuh optimal di ketinggian 1.400 mdpl dengan iklim sejuk Danau Diatas.</p>',
             'flavor_profile' => 'Keasaman seimbang, body medium-full, aroma herbal dan fruity, finish clean',
             'is_active' => true,
         ]);
@@ -174,8 +174,8 @@ class DatabaseSeeder extends Seeder
 
         BlogPost::create([
             'title' => [
-                'id' => 'Tips Berkunjung ke Agrowisata Kopi Danau Atas',
-                'en' => 'Tips for Visiting Kopi Danau Atas Agrotourism',
+                'id' => 'Tips Berkunjung ke Agrowisata Kopi Danau Diatas',
+                'en' => 'Tips for Visiting Kopi Danau Diatas Agrotourism',
             ],
             'content' => [
                 'id' => '<p>Berencana mengunjungi agrowisata kami? Berikut beberapa tips agar kunjungan Anda semakin menyenangkan:</p><ul><li>Kenakan pakaian dan sepatu yang nyaman untuk berjalan di kebun</li><li>Bawa kamera untuk mengabadikan momen indah</li><li>Datang pagi hari untuk menikmati udara segar dan pemandangan sunrise</li><li>Pesan tiket secara online melalui website untuk menghindari antrean</li></ul>',
@@ -207,12 +207,12 @@ class DatabaseSeeder extends Seeder
         HomepageSection::create([
             'section_key' => 'about',
             'title' => [
-                'id' => 'Tentang CV Kopi Danau Atas',
-                'en' => 'About CV Kopi Danau Atas',
+                'id' => 'Tentang CV Kopi Danau Diatas',
+                'en' => 'About CV Kopi Danau Diatas',
             ],
             'description' => [
-                'id' => '<p>CV Kopi Danau Atas adalah perusahaan pengolahan dan perdagangan kopi Arabika Solok yang berlokasi di kawasan strategis Danau Diatas, Alahan Panjang. Kami menawarkan pengalaman agrowisata yang memadukan keindahan alam dataran tinggi dengan edukasi proses produksi kopi dari hulu ke hilir.</p>',
-                'en' => '<p>CV Kopi Danau Atas is a Solok Arabica coffee processing and trading company located in the strategic area of Lake Diatas, Alahan Panjang. We offer an agrotourism experience combining the natural beauty of the highlands with education on the coffee production process from upstream to downstream.</p>',
+                'id' => '<p>CV Kopi Danau Diatas adalah perusahaan pengolahan dan perdagangan kopi Arabika Solok yang berlokasi di kawasan strategis Danau Diatas, Alahan Panjang. Kami menawarkan pengalaman agrowisata yang memadukan keindahan alam dataran tinggi dengan edukasi proses produksi kopi dari hulu ke hilir.</p>',
+                'en' => '<p>CV Kopi Danau Diatas is a Solok Arabica coffee processing and trading company located in the strategic area of Lake Diatas, Alahan Panjang. We offer an agrotourism experience combining the natural beauty of the highlands with education on the coffee production process from upstream to downstream.</p>',
             ],
             'extra_data' => [
                 'cta_text' => 'Lihat Selengkapnya',
@@ -252,7 +252,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ── Site Settings ───────────────────────────────────
-        SiteSetting::setValue('company_name', 'CV Kopi Danau Atas');
+        SiteSetting::setValue('company_name', 'CV Kopi Danau Diatas');
         SiteSetting::setValue('company_address', 'Alahan Panjang, Kec. Lembah Gumanti, Kab. Solok, Sumatera Barat');
         SiteSetting::setValue('company_phone', '+62 812-3456-7890');
         SiteSetting::setValue('company_email', 'info@kopidanauatas.com');
