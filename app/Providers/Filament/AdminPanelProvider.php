@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Kopi Danau Atas')
+            ->brandName('Kopi Danau Diatas')
             ->colors([
                 'primary' => Color::Green,
                 'danger' => Color::Red,

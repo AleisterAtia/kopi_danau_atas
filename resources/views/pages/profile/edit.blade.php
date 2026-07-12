@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="py-12 bg-bg min-h-screen">
+<div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
         @if(session('success'))
@@ -28,13 +28,13 @@
             </div>
         @endif
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-border overflow-hidden">
             <div class="p-6 md:p-8">
-                <div class="flex items-center mb-8 pb-8 border-b border-gray-100">
+                <div class="flex items-center mb-8 pb-8 border-b border-border">
                     @if(auth()->user()->avatar)
-                        <img src="{{ Storage::url(auth()->user()->avatar) }}" class="w-24 h-24 rounded-full object-cover border-4 border-gray-50 mr-6">
+                        <img src="{{ Storage::url(auth()->user()->avatar) }}" class="w-24 h-24 rounded-full object-cover border-4 border-bg-warm mr-6">
                     @else
-                        <div class="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold border-4 border-gray-50 mr-6">
+                        <div class="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold border-4 border-bg-warm mr-6">
                             {{ substr(auth()->user()->name, 0, 1) }}
                         </div>
                     @endif
@@ -68,7 +68,7 @@
                         </div>
                     </div>
 
-                    <div class="pt-6 mt-6 border-t border-gray-100">
+                    <div class="pt-6 mt-6 border-t border-border">
                         <h3 class="text-lg font-bold text-gray-900 font-heading mb-4">{{ __('Ubah Kata Sandi') }} <span class="text-sm font-normal text-gray-500">({{ __('Biarkan kosong jika tidak ingin mengubah') }})</span></h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

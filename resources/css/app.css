@@ -131,20 +131,65 @@ h1, h2, h3, h4, h5, h6 {
     position: absolute;
     inset: 0;
     background: linear-gradient(
-        to right,
-        rgba(27,67,50,0.85) 0%,
-        rgba(27,67,50,0.45) 50%,
-        rgba(0,0,0,0.2) 100%
+        105deg,
+        rgba(15,34,25,0.85) 0%,
+        rgba(15,34,25,0.50) 45%,
+        rgba(15,34,25,0.15) 100%
     ), linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.25) 0%,
-        rgba(27,67,50,0.5) 100%
+        to top,
+        rgba(15,34,25,0.45) 0%,
+        transparent 20%
     );
     z-index: 1;
 }
 .hero-content {
     position: relative;
     z-index: 2;
+}
+
+/* ── Hero eyebrow ────────────────────── */
+.hero-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.72);
+    margin-bottom: 1.5rem;
+}
+.hero-eyebrow span {
+    color: var(--color-accent-warm);
+    margin: 0 0.35rem;
+}
+
+/* ── Hero facts strip (signature) ────── */
+.hero-facts {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    border-top: 1px solid rgba(255,255,255,0.16);
+}
+.hero-fact dt {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 0.25rem;
+}
+.hero-fact dd {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+}
+.hero-fact-sep {
+    width: 1px;
+    height: 34px;
+    background: rgba(255,255,255,0.16);
+}
+@media (max-width: 640px) {
+    .hero-fact-sep { display: none; }
 }
 
 /* ── Section label ───────────────────── */
@@ -173,11 +218,12 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 12px;
     border: 1px solid var(--color-border);
     overflow: hidden;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
 }
 .card:hover {
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(15,34,25,0.06);
+    transform: translateY(-2px);
+    border-color: rgba(64,145,108,0.4);
 }
 
 /* ── Buttons ─────────────────────────── */

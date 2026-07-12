@@ -40,7 +40,7 @@ return [
     'reminder_contact_us' => 'If you have any questions, feel free to contact us.',
 
     'salutation_thanks' => 'Thank you,',
-    'salutation_team' => 'The Kopi Danau Atas Team',
+    'salutation_team' => 'The Kopi Danau Diatas Team',
 
     'footer_auto_message' => 'This email was sent automatically. Please do not reply to this email.',
 ];

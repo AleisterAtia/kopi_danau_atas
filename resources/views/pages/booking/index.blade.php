@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="py-12 bg-bg min-h-screen">
+<div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if(session('success'))
             <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-md">
@@ -17,7 +17,7 @@
             </div>
         @endif
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-border overflow-hidden">
             @if($bookings->isEmpty())
                 <div class="text-center py-16">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,7 +35,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-100">
+                            <tr class="bg-bg-warm border-b border-border">
                                 <th class="py-4 px-6 font-semibold text-gray-600 uppercase text-xs tracking-wider">{{ __('Kode & Paket') }}</th>
                                 <th class="py-4 px-6 font-semibold text-gray-600 uppercase text-xs tracking-wider">{{ __('Tgl Kunjungan') }}</th>
                                 <th class="py-4 px-6 font-semibold text-gray-600 uppercase text-xs tracking-wider">{{ __('Total') }}</th>
@@ -43,9 +43,9 @@
                                 <th class="py-4 px-6 font-semibold text-gray-600 uppercase text-xs tracking-wider text-right">{{ __('Aksi') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y divide-border">
                             @foreach($bookings as $booking)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-bg-warm transition-colors">
                                 <td class="py-4 px-6">
                                     <div class="font-mono text-sm text-gray-500 mb-1">{{ $booking->booking_code }}</div>
                                     <div class="font-bold text-gray-900">{{ $booking->tourPackage->name }}</div>
@@ -85,7 +85,7 @@
                                             {{ __('Invoice') }}
                                         </a>
                                     @endif
-                                    <a href="{{ route('booking.show', $booking) }}" class="inline-flex items-center text-sm border border-gray-300 bg-white text-gray-700 px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
+                                    <a href="{{ route('booking.show', $booking) }}" class="inline-flex items-center text-sm border border-border bg-white text-text-secondary px-3 py-1.5 rounded-lg hover:bg-bg-warm transition-colors">
                                         {{ __('Detail') }}
                                     </a>
                                 </td>
@@ -96,7 +96,7 @@
                 </div>
                 
                 @if($bookings->hasPages())
-                <div class="px-6 py-4 border-t border-gray-100">
+                <div class="px-6 py-4 border-t border-border">
                     {{ $bookings->links() }}
                 </div>
                 @endif

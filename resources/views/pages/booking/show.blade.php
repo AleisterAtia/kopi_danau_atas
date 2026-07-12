@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<div class="py-12 bg-bg min-h-screen">
+<div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         @if(session('success'))
             <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-md">
@@ -48,10 +48,10 @@
 
         {{-- E-Ticket QR Code (paid/confirmed/completed) --}}
         @if(in_array($booking->status, ['paid', 'confirmed', 'completed']) && $booking->qr_code_path)
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-border overflow-hidden">
             <div class="p-6 md:p-8">
                 <div class="flex flex-col md:flex-row items-center gap-6">
-                    <div class="flex-shrink-0 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <div class="flex-shrink-0 bg-bg-warm p-4 rounded-xl border border-border">
                         <img src="{{ Storage::url($booking->qr_code_path) }}" alt="E-Ticket QR" class="w-48 h-48 object-contain">
                     </div>
                     <div class="flex-1 text-center md:text-left">
@@ -105,9 +105,9 @@
 
         {{-- Guest Info Card --}}
         @if($booking->guest_name || $booking->guest_phone || $booking->guest_email || $booking->notes)
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-border overflow-hidden">
             <div class="p-6 md:p-8">
-                <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-gray-100 pb-2">{{ __('Data Pemesan') }}</h2>
+                <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-border pb-2">{{ __('Data Pemesan') }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     @if($booking->guest_name)
                     <div>
@@ -130,7 +130,7 @@
                     @if($booking->notes)
                     <div class="md:col-span-2">
                         <span class="block text-xs text-gray-500 uppercase mb-1">{{ __('Catatan Khusus') }}</span>
-                        <p class="text-gray-700 bg-gray-50 p-3 rounded-lg whitespace-pre-line">{{ $booking->notes }}</p>
+                        <p class="text-gray-700 bg-bg-warm p-3 rounded-lg whitespace-pre-line">{{ $booking->notes }}</p>
                     </div>
                     @endif
                 </div>
@@ -138,18 +138,18 @@
         </div>
         @endif
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-border overflow-hidden">
             <div class="p-6 md:p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Package Info -->
                     <div>
-                        <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-gray-100 pb-2">{{ __('Informasi Paket') }}</h2>
+                        <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-border pb-2">{{ __('Informasi Paket') }}</h2>
                         <div class="space-y-4">
                             <div class="flex items-start">
                                 @if($booking->tourPackage->images->first())
                                     <img src="{{ Storage::url($booking->tourPackage->images->first()->image_path) }}" class="w-16 h-16 rounded-lg object-cover mr-4">
                                 @else
-                                    <div class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mr-4">
+                                    <div class="w-16 h-16 rounded-lg bg-primary-50 flex items-center justify-center mr-4">
                                         <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     </div>
                                 @endif
@@ -162,7 +162,7 @@
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4 mt-4 bg-gray-50 p-4 rounded-lg">
+                            <div class="grid grid-cols-2 gap-4 mt-4 bg-bg-warm p-4 rounded-lg">
                                 <div>
                                     <span class="block text-xs text-gray-500 uppercase">{{ __('Tanggal Kunjungan') }}</span>
                                     <span class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($booking->visit_date)->format('d M Y') }}</span>
@@ -177,13 +177,13 @@
 
                     <!-- Payment Info -->
                     <div>
-                        <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-gray-100 pb-2">{{ __('Rincian Harga') }}</h2>
-                        <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold font-heading mb-4 text-gray-900 border-b border-border pb-2">{{ __('Rincian Harga') }}</h2>
+                        <div class="space-y-3 bg-bg-warm p-4 rounded-lg">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">{{ $booking->tourPackage->name }} (x{{ $booking->guest_count }})</span>
                                 <span class="text-gray-900">Rp {{ number_format($booking->tourPackage->price * $booking->guest_count, 0, ',', '.') }}</span>
                             </div>
-                            <div class="border-t border-gray-200 pt-3 mt-3 flex justify-between items-center">
+                            <div class="border-t border-border pt-3 mt-3 flex justify-between items-center">
                                 <span class="font-bold text-gray-900">{{ __('Total Pembayaran') }}</span>
                                 <span class="text-xl font-bold text-primary">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</span>
                             </div>
@@ -217,12 +217,12 @@
 
         <!-- Review Section (Only if completed) -->
         @if($booking->status == 'completed')
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-xl border border-border overflow-hidden">
                 <div class="p-6 md:p-8">
                     <h2 class="text-2xl font-bold font-heading mb-6 text-gray-900">{{ __('Ulasan Pengalaman Anda') }}</h2>
                     
                     @if($booking->review)
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                        <div class="bg-bg-warm p-6 rounded-xl border border-border">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex text-warning">
                                     @for($i=1; $i<=5; $i++)

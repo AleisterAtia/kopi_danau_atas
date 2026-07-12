@@ -41,7 +41,7 @@ class CoffeeVarietyResource extends Resource
 
                     Forms\Components\TextInput::make('origin')
                         ->maxLength(255)
-                        ->placeholder('e.g., Alahan Panjang, Solok'),
+                        ->placeholder('e.g., Danau Diatas, Kabupaten Solok'),
 
                     Forms\Components\FileUpload::make('image_path')
                         ->label('Image')

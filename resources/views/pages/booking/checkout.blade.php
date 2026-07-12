@@ -14,11 +14,11 @@
     </div>
 </div>
 
-<div class="py-12 bg-bg min-h-screen" x-data="checkoutProcess()">
+<div class="py-16 lg:py-20 bg-bg-warm min-h-screen" x-data="checkoutProcess()">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-            <div class="p-6 md:p-8 border-b border-gray-100 bg-gray-50">
+
+        <div class="bg-white rounded-xl border border-border overflow-hidden mb-8">
+            <div class="p-6 md:p-8 border-b border-border bg-bg-warm">
                 <div class="flex items-center">
                     @if($booking->tourPackage->images->first())
                         <img src="{{ Storage::url($booking->tourPackage->images->first()->image_path) }}" class="w-20 h-20 rounded-xl object-cover mr-6 shadow-sm">
@@ -39,7 +39,7 @@
                         <span>{{ __('Harga Paket') }} ({{ $booking->guest_count }}x)</span>
                         <span>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</span>
                     </div>
-                    <div class="border-t border-gray-200 pt-3 flex justify-between items-center">
+                    <div class="border-t border-border pt-3 flex justify-between items-center">
                         <span class="font-bold text-gray-900">{{ __('Total') }}</span>
                         <span class="text-2xl font-bold text-primary">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</span>
                     </div>

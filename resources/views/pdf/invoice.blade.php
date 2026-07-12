@@ -329,7 +329,7 @@
     {{-- HEADER --}}
     <div class="header clearfix">
         <div class="header-left">
-            <p class="brand-name">Kopi Danau Atas</p>
+            <p class="brand-name">Kopi Danau Diatas</p>
         </div>
         <div class="header-right">
             <p class="invoice-title">Invoice</p>
@@ -351,7 +351,7 @@
     <div class="address-section clearfix">
         <div class="address-from">
             <div class="address-heading">Dari:</div>
-            <div class="address-name">CV. Kopi Danau Atas</div>
+            <div class="address-name">CV. Kopi Danau Diatas</div>
             <div class="address-detail">
                 Jl. Raya Situ Patenggang,<br>
                 Ciwidey, Kab. Bandung,<br>
@@ -454,7 +454,7 @@
 
     {{-- FOOTER --}}
     <div class="footer">
-        <p>Terima kasih telah memesan paket wisata di Kopi Danau Atas.</p>
+        <p>Terima kasih telah memesan paket wisata di Kopi Danau Diatas.</p>
         <p>Invoice ini digenerate secara otomatis dan sah tanpa tanda tangan.</p>
     </div>
 </body>

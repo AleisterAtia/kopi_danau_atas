@@ -61,7 +61,7 @@ class BookingConfirmation extends Mailable implements ShouldQueue
         $this->booking->loadMissing(['tourPackage', 'user', 'payment']);
 
         $settings = [
-            'company_name' => SiteSetting::getValue('company_name', 'CV Kopi Danau Atas'),
+            'company_name' => SiteSetting::getValue('company_name', 'CV Kopi Danau Diatas'),
             'company_phone' => SiteSetting::getValue('company_phone'),
             'company_whatsapp' => SiteSetting::getValue('company_whatsapp'),
             'company_address' => SiteSetting::getValue('company_address'),

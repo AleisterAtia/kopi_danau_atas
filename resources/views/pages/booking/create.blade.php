@@ -33,7 +33,7 @@
     </div>
 </div>
 
-<div class="py-12 bg-bg min-h-screen">
+<div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         @if ($errors->any())
@@ -56,9 +56,9 @@
 
                 {{-- LEFT — Form Data Pemesan --}}
                 <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-white rounded-xl border border-border overflow-hidden">
                         <div class="p-6 md:p-8">
-                            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                            <div class="flex items-center justify-between mb-6 pb-4 border-b border-border">
                                 <h2 class="text-xl font-bold font-heading text-gray-900">{{ __('Data Pemesan') }}</h2>
                                 <span class="text-xs text-gray-500">{{ __('Wajib diisi') }} *</span>
                             </div>
@@ -101,10 +101,10 @@
                     </div>
 
                     {{-- T&C --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-white rounded-xl border border-border overflow-hidden">
                         <div class="p-6 md:p-8">
                             <h3 class="text-lg font-bold font-heading text-gray-900 mb-4">{{ __('Syarat & Ketentuan') }}</h3>
-                            <div class="bg-gray-50 rounded-lg p-4 max-h-44 overflow-y-auto text-sm text-gray-600 leading-relaxed space-y-2 mb-4">
+                            <div class="bg-bg-warm border border-border rounded-lg p-4 max-h-44 overflow-y-auto text-sm text-gray-600 leading-relaxed space-y-2 mb-4">
                                 <p>{{ __('1. Pemesanan dianggap sah setelah pembayaran berhasil diverifikasi oleh sistem.') }}</p>
                                 <p>{{ __('2. Pembayaran wajib diselesaikan dalam 1 (satu) jam setelah pemesanan dibuat. Pemesanan akan otomatis dibatalkan jika melewati batas waktu.') }}</p>
                                 <p>{{ __('3. Pengunjung wajib hadir tepat waktu pada tanggal kunjungan yang dipesan.') }}</p>
@@ -125,8 +125,8 @@
 
                 {{-- RIGHT — Order Summary --}}
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-28">
-                        <div class="p-6 border-b border-gray-100 bg-gray-50">
+                    <div class="bg-white rounded-xl border border-border overflow-hidden sticky top-28">
+                        <div class="p-6 border-b border-border bg-bg-warm">
                             <h3 class="text-base font-bold font-heading text-gray-900">{{ __('Ringkasan Pesanan') }}</h3>
                         </div>
 
@@ -135,7 +135,7 @@
                                 @if($package->images->first())
                                     <img src="{{ Storage::url($package->images->first()->image_path) }}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
                                 @else
-                                    <div class="w-20 h-20 rounded-lg bg-gray-100 flex-shrink-0"></div>
+                                    <div class="w-20 h-20 rounded-lg bg-primary-50 flex-shrink-0"></div>
                                 @endif
                                 <div class="min-w-0">
                                     <h4 class="font-bold text-gray-900 leading-tight line-clamp-2">{{ $package->name }}</h4>
@@ -146,7 +146,7 @@
                                 </div>
                             </div>
 
-                            <div class="space-y-3 pt-4 border-t border-gray-100">
+                            <div class="space-y-3 pt-4 border-t border-border">
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">{{ __('Tanggal Kunjungan') }}</span>
                                     <span class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($visitDate)->translatedFormat('d M Y') }}</span>
@@ -161,7 +161,7 @@
                                 </div>
                             </div>
 
-                            <div class="pt-4 border-t border-gray-100">
+                            <div class="pt-4 border-t border-border">
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="text-sm text-gray-600">{{ __('Subtotal') }}</span>
                                     <span class="text-sm text-gray-900">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>

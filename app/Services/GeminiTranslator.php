@@ -41,7 +41,7 @@ class GeminiTranslator
             Rules:
             - Preserve all HTML tags and structure exactly; translate only the visible text.
             - Keep JSON keys unchanged.
-            - Keep proper nouns and brand names natural (e.g. "CV Kopi Danau Atas",
+            - Keep proper nouns and brand names natural (e.g. "CV Kopi Danau Diatas",
               "Danau Diatas", "Alahan Panjang", "Solok"); translate "Arabika" as "Arabica".
             - Return ONLY the JSON object, nothing else.
 

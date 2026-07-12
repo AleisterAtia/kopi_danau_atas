@@ -5,7 +5,7 @@
 
             {{-- Logo --}}
             <a href="{{ route('home') }}" class="nav-logo font-extrabold text-[1.35rem] tracking-tight transition-colors duration-300">
-                Kopi Danau Atas
+                Kopi Danau Diatas
             </a>
 
             {{-- Desktop nav --}}
