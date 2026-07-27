@@ -79,6 +79,8 @@
     "Konfirmasi Kata Sandi": "Confirm Password",
     "Daftar Sekarang": "Register Now",
     "Atau daftar dengan": "Or register with",
+    "Mohon selesaikan verifikasi captcha.": "Please complete the captcha verification.",
+    "Verifikasi captcha gagal. Silakan coba lagi.": "Captcha verification failed. Please try again.",
     "Atur Ulang Kata Sandi": "Reset Password",
     "Buat kata sandi baru untuk akun Anda.": "Create a new password for your account.",
     "Hapus filter": "Clear filter",

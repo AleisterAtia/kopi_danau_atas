@@ -48,4 +48,11 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-2.5-flash-lite'),
     ],
 
+    // Cloudflare Turnstile — captcha on the public registration form.
+    // Both keys empty = feature is off; the form submits without a challenge.
+    'turnstile' => [
+        'sitekey' => env('TURNSTILE_SITE_KEY'),
+        'secret' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];
