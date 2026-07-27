@@ -136,6 +136,58 @@ class MidtransWebhookTest extends TestCase
         $this->assertSame('cancel', $payment->fresh()->status);
     }
 
+    /**
+     * The customer pays a still-valid VA after bookings:expire-pending already
+     * reclaimed the booking. Money is real, so the payment must be recorded and
+     * the webhook must ack — but the dead booking must not be resurrected (its
+     * quota was released and may have been resold), and no ticket may go out.
+     */
+    public function test_late_settlement_on_an_expired_booking_is_recorded_without_issuing_a_ticket(): void
+    {
+        Mail::fake();
+        $payment = $this->pendingPayment();
+
+        $this->travel(2)->hours();
+        $this->artisan('bookings:expire-pending')->assertSuccessful();
+        $this->assertSame('expired', $payment->booking->fresh()->status);
+
+        $notification = $this->notificationFor($payment, 'settlement');
+
+        // Must ack, or Midtrans retries into the idempotency guard and the
+        // failure is buried behind a 200.
+        $this->postJson(self::WEBHOOK_URL, $notification)->assertOk();
+
+        $payment->refresh();
+        $this->assertSame('settlement', $payment->status, 'payment must record the money that moved');
+        $this->assertNotNull($payment->paid_at);
+        $this->assertSame('expired', $payment->booking->fresh()->status, 'dead booking must not be revived');
+        $this->assertNull($payment->booking->fresh()->qr_code_path);
+        Mail::assertNothingQueued();
+
+        // A retry must stay consistent, not flip anything.
+        $this->postJson(self::WEBHOOK_URL, $notification)->assertOk();
+        $this->assertSame('expired', $payment->booking->fresh()->status);
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * Guards the atomicity that makes the case above safe: payment and booking
+     * must never disagree because one committed and the other threw.
+     */
+    public function test_refund_notification_on_a_completed_booking_does_not_split_payment_and_booking(): void
+    {
+        $payment = $this->pendingPayment();
+        $payment->booking->update(['status' => 'paid']);
+        $payment->booking->update(['status' => 'completed']);
+
+        $this->postJson(self::WEBHOOK_URL, $this->notificationFor($payment, 'refund'))->assertOk();
+
+        // completed is terminal, so the booking stays put — but the refund is
+        // still on the payment record for the admin to reconcile.
+        $this->assertSame('refund', $payment->fresh()->status);
+        $this->assertSame('completed', $payment->booking->fresh()->status);
+    }
+
     public function test_notification_for_unknown_order_is_ignored(): void
     {
         // Valid signature, but no Payment row matches this order_id.

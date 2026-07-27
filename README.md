@@ -81,7 +81,7 @@ npm run dev                  # 3) Vite (hot reload aset)
 ### ⚠️ Dua dependensi runtime yang WAJIB ada
 
 | Proses | Bila tidak dijalankan |
-|--------|------------------------|
+|--------|-----------------------|
 | **`php artisan queue:work`** | Email konfirmasi + e-ticket + invoice **tidak akan terkirim** (email di-`queue`, bukan dikirim sinkron). |
 | **Scheduler (`php artisan schedule:run` tiap menit via cron)** | Booking `pending` **tidak pernah kedaluwarsa** (kuota tidak dibebaskan) dan booking lampau **tidak auto-complete**. |
 

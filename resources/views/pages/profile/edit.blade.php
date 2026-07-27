@@ -84,6 +84,18 @@
                         </div>
                     </div>
 
+                    @if (auth()->user()->password)
+                        <div class="pt-6 mt-6 border-t border-border">
+                            <label for="current_password" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ __('Kata Sandi Saat Ini') }}
+                            </label>
+                            <p class="text-sm text-gray-500 mb-2">
+                                {{ __('Wajib diisi hanya jika Anda mengubah alamat email atau kata sandi.') }}
+                            </p>
+                            <input type="password" id="current_password" name="current_password" autocomplete="current-password" class="w-full md:w-1/2 rounded-lg border-gray-300 focus:border-primary focus:ring focus:ring-primary/20">
+                        </div>
+                    @endif
+
                     <div class="pt-6 flex justify-end">
                         <button type="submit" class="btn-primary">
                             {{ __('Simpan Perubahan') }}

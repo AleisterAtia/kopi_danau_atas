@@ -6,8 +6,14 @@
     @include('partials.navbar-light-override')
 @endpush
 
+@if (\App\Rules\Turnstile::enabled())
+    @push('scripts')
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+    @endpush
+@endif
+
 @section('content')
-<div class="min-h-[80vh] flex items-center justify-center bg-bg-warm py-16 px-4 sm:px-6 lg:px-8">
+<div class="min-h-[80vh] flex items-center justify-center bg-bg-warm py-30 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-sm border border-border">
         <div>
             <h2 class="mt-2 text-center text-3xl font-extrabold text-primary font-heading">
@@ -51,6 +57,11 @@
                     <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary focus:z-10 sm:text-sm" placeholder="{{ __('Ulangi kata sandi') }}">
                 </div>
             </div>
+
+            @if (\App\Rules\Turnstile::enabled())
+                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.sitekey') }}"
+                     data-language="{{ app()->getLocale() }}" data-theme="light"></div>
+            @endif
 
             <div>
                 <button type="submit" class="w-full btn-primary justify-center py-3">

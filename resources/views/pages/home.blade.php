@@ -2,7 +2,13 @@
 
 @section('title', __('Beranda'))
 
+@push('head')
+<style>[x-cloak]{display:none!important}</style>
+@endpush
+
 @section('content')
+
+<div x-data="{ videoOpen: false, videoSrc: '' }">
 
 {{-- ═══════════════════════════════════════
      SECTION 1 — Hero Banner
@@ -16,17 +22,23 @@
             <h1 class="text-4xl sm:text-5xl lg:text-[3.75rem] font-extrabold text-white leading-[1.08] tracking-[-0.02em] mb-6 anim-fade-up" style="animation-delay:.2s">
                 {{ $hero->title ?? __('Jelajahi Keindahan Agrowisata Kopi Solok') }}
             </h1>
-            <p class="text-lg text-white/80 leading-relaxed mb-10 max-w-xl anim-fade-up" style="animation-delay:.3s">
-                {{ $hero->description ?? __('Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas.') }}
-            </p>
+            <div class="text-lg text-white/80 leading-relaxed mb-10 max-w-xl anim-fade-up" style="animation-delay:.3s">
+                {!! $hero->description ?? __('Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas.') !!}
+            </div>
             <div class="flex flex-wrap gap-3 anim-fade-up" style="animation-delay:.4s">
                 <a href="{{ $hero->extra_data['cta_url'] ?? route('packages.index') }}" class="btn btn-primary btn-lg !bg-white !text-primary !border-white hover:!bg-primary-50">
                     {{ __($hero->extra_data['cta_text'] ?? 'Pesan Sekarang') }}
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                 </a>
-                <a href="{{ route('blog.index') }}" class="btn btn-lg !border-white/35 !text-white hover:!bg-white/10">
+                <!-- <a href="{{ route('blog.index') }}" class="btn btn-lg !border-white/35 !text-white hover:!bg-white/10">
                     {{ __('Pelajari Lebih Lanjut') }}
-                </a>
+                </a> -->
+                @if($hero && $hero->video_path)
+                <button type="button" @click="videoSrc='{{ Storage::url($hero->video_path) }}'; videoOpen=true" class="btn btn-lg !border-white/35 !text-white hover:!bg-white/10">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    {{ __('Lihat Video') }}
+                </button>
+                @endif
             </div>
         </div>
     </div>
@@ -87,6 +99,11 @@
                         </div>
                     @endif
                 </div>
+                @if($about->video_path)
+                <button type="button" @click="videoSrc='{{ Storage::url($about->video_path) }}'; videoOpen=true" class="absolute inset-0 m-auto w-16 h-16 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-lg transition-colors" aria-label="{{ __('Lihat Video') }}">
+                    <svg class="w-6 h-6 text-primary ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+                @endif
             </div>
 
             {{-- Text side --}}
@@ -348,5 +365,13 @@
         </div>
     </div>
 </section>
+
+{{-- Video modal — shared by Hero & About "Lihat Video" triggers --}}
+<div x-show="videoOpen" x-cloak x-transition.opacity @click="videoOpen=false; videoSrc=''" @keydown.escape.window="videoOpen=false; videoSrc=''" class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+    <button type="button" @click.stop="videoOpen=false; videoSrc=''" class="absolute top-6 right-6 text-white/80 hover:text-white text-3xl leading-none">&times;</button>
+    <video :src="videoSrc" x-show="videoOpen" controls autoplay class="max-w-4xl w-full rounded-lg" @click.stop></video>
+</div>
+
+</div>
 
 @endsection

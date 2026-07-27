@@ -2,9 +2,14 @@
 
 namespace App\Services;
 
+use App\Filament\Resources\BookingResource;
 use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\User;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Midtrans\Config;
@@ -71,6 +76,16 @@ class MidtransService
             'callbacks' => [
                 'finish' => url('/booking/'.$booking->id),
             ],
+            // Kill the payment window exactly when bookings:expire-pending kills
+            // the booking (1h after created_at), so a bank-transfer VA — valid
+            // 24h by default — can never outlive the booking it pays for and
+            // land money on an already-expired row. Counted from created_at, not
+            // now(), so "pay again" clicks don't extend the window.
+            'expiry' => [
+                'start_time' => now()->format('Y-m-d H:i:s O'),
+                'unit' => 'minute',
+                'duration' => $this->minutesLeftToPay($booking),
+            ],
         ];
 
         $snapToken = Snap::getSnapToken($params);
@@ -93,6 +108,24 @@ class MidtransService
         ]);
 
         return $snapToken;
+    }
+
+    /**
+     * Minutes a booking still has before bookings:expire-pending reclaims it.
+     *
+     * Floored at 1 because Midtrans rejects a zero/negative duration; a booking
+     * that is already past the window simply gets the shortest window Midtrans
+     * accepts, and the late-payment guard in handleNotification() catches
+     * whatever slips through that last minute.
+     */
+    protected function minutesLeftToPay(Booking $booking): int
+    {
+        // ponytail: the 1h window is duplicated in ExpirePendingBookings and
+        // TourPackage::getAvailableQuota — promote to one Booking constant if a
+        // third rule ever needs it.
+        $elapsed = (int) $booking->created_at->diffInMinutes(now());
+
+        return max(1, 60 - $elapsed);
     }
 
     /**
@@ -156,57 +189,67 @@ class MidtransService
             return;
         }
 
-        $payment->update([
-            'midtrans_transaction_id' => $incomingTransactionId,
-            'payment_type' => $notification['payment_type'] ?? null,
-            'midtrans_response' => $notification,
-        ]);
+        // Payment row and booking row must move together or not at all. Without
+        // this transaction the payment update commits, the booking update throws
+        // on an illegal transition, and Midtrans' retry then hits the
+        // idempotency guard above and gets a 200 — silently burying the failure.
+        $shouldFinalize = DB::transaction(function () use ($payment, $notification, $incomingTransactionId, $incomingStatus, $orderId) {
+            $payment->update([
+                'midtrans_transaction_id' => $incomingTransactionId,
+                'payment_type' => $notification['payment_type'] ?? null,
+                'midtrans_response' => $notification,
+            ]);
 
-        switch ($incomingStatus) {
-            case 'capture':
-            case 'settlement':
-                // Idempotency: only fire post-payment side-effects (QR + email)
-                // when this booking transitions INTO paid for the first time.
-                $wasAlreadyPaid = in_array(
-                    $payment->booking->status,
-                    ['paid', 'confirmed', 'completed'],
-                    true
-                );
+            switch ($incomingStatus) {
+                case 'capture':
+                case 'settlement':
+                    // Idempotency: only fire post-payment side-effects (QR + email)
+                    // when this booking transitions INTO paid for the first time.
+                    $wasAlreadyPaid = in_array(
+                        $payment->booking->status,
+                        ['paid', 'confirmed', 'completed'],
+                        true
+                    );
 
-                $payment->update(['status' => 'settlement', 'paid_at' => $payment->paid_at ?? now()]);
-                $payment->booking->update(['status' => 'paid']);
+                    $payment->update(['status' => 'settlement', 'paid_at' => $payment->paid_at ?? now()]);
 
-                if (! $wasAlreadyPaid) {
-                    $this->finalizePaidBooking($payment->booking->fresh());
-                }
-                break;
+                    return $this->applyBookingStatus($payment, 'paid') && ! $wasAlreadyPaid;
 
-            case 'expire':
-                $payment->update(['status' => 'expire']);
-                $payment->booking->update(['status' => 'expired']);
-                break;
+                case 'expire':
+                    $payment->update(['status' => 'expire']);
+                    $this->applyBookingStatus($payment, 'expired');
+                    break;
 
-            case 'cancel':
-            case 'deny':
-                $payment->update(['status' => $incomingStatus]);
-                $payment->booking->update(['status' => 'cancelled']);
-                break;
+                case 'cancel':
+                case 'deny':
+                    $payment->update(['status' => $incomingStatus]);
+                    $this->applyBookingStatus($payment, 'cancelled');
+                    break;
 
-            case 'pending':
-                $payment->update(['status' => 'pending']);
-                break;
+                case 'pending':
+                    $payment->update(['status' => 'pending']);
+                    break;
 
-            case 'refund':
-            case 'partial_refund':
-                $payment->update(['status' => 'refund']);
-                $payment->booking->update(['status' => 'cancelled']);
-                break;
+                case 'refund':
+                case 'partial_refund':
+                    $payment->update(['status' => 'refund']);
+                    $this->applyBookingStatus($payment, 'cancelled');
+                    break;
 
-            default:
-                Log::warning('Midtrans notification with unknown status', [
-                    'order_id' => $orderId,
-                    'status' => $incomingStatus,
-                ]);
+                default:
+                    Log::warning('Midtrans notification with unknown status', [
+                        'order_id' => $orderId,
+                        'status' => $incomingStatus,
+                    ]);
+            }
+
+            return false;
+        });
+
+        // Runs after commit: QR writes a file and mail queues a job, neither of
+        // which should happen for a transaction that ends up rolled back.
+        if ($shouldFinalize) {
+            $this->finalizePaidBooking($payment->booking->fresh());
         }
 
         Log::info('Midtrans notification processed', [
@@ -214,6 +257,46 @@ class MidtransService
             'transaction_id' => $incomingTransactionId,
             'status' => $incomingStatus,
         ]);
+    }
+
+    /**
+     * Apply a booking status coming from Midtrans, refusing illegal transitions
+     * instead of letting them throw.
+     *
+     * A notification is a statement about money that already moved — it is never
+     * wrong, and it can never be "retried away". If it disagrees with the
+     * booking's state (almost always because bookings:expire-pending reclaimed
+     * the booking while the customer was paying a still-valid VA), throwing
+     * would abort the webhook and leave Midtrans retrying into the idempotency
+     * guard. So we record the payment truthfully, leave the booking alone, and
+     * shout for a human — the same manual-reconciliation stance RefundService
+     * documents for refunds.
+     *
+     * @return bool whether the booking actually moved
+     */
+    protected function applyBookingStatus(Payment $payment, string $status): bool
+    {
+        $booking = $payment->booking;
+
+        if (Booking::canTransitionTo($booking->status, $status)) {
+            $booking->update(['status' => $status]);
+
+            return true;
+        }
+
+        Log::critical('Midtrans notification could not be applied to booking', [
+            'booking_code' => $booking->booking_code,
+            'booking_status' => $booking->status,
+            'attempted_status' => $status,
+            'order_id' => $payment->midtrans_order_id,
+            'transaction_id' => $payment->midtrans_transaction_id,
+            'gross_amount' => $payment->gross_amount,
+            'action_required' => $status === 'paid'
+                ? 'Uang diterima untuk booking yang sudah mati — refund manual lewat dashboard Midtrans.'
+                : 'Status pembayaran & booking tidak sinkron — rekonsiliasi manual.',
+        ]);
+
+        return false;
     }
 
     /**
@@ -256,5 +339,38 @@ class MidtransService
                 'exception' => $e->getMessage(),
             ]);
         }
+
+        try {
+            $this->notifyAdminsOfPayment($booking);
+        } catch (\Throwable $e) {
+            Log::error('Failed to notify admins of paid booking '.$booking->booking_code, [
+                'exception' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Alert admins the moment a booking is actually paid (not when merely
+     * placed) — this is the point at which staff need to act (confirm the
+     * booking). Sent both to the database (Filament bell) and broadcast
+     * over websockets (Reverb) for an instant toast, so nobody has to
+     * refresh the panel to see it.
+     */
+    protected function notifyAdminsOfPayment(Booking $booking): void
+    {
+        $admins = User::where('role', 'admin')->get();
+
+        Notification::make()
+            ->title('Pembayaran diterima')
+            ->body("{$booking->booking_code} — {$booking->guest_name} ({$booking->guest_count} orang) sudah bayar, menunggu konfirmasi.")
+            ->icon('heroicon-o-banknotes')
+            ->iconColor('success')
+            ->actions([
+                Action::make('view')
+                    ->label('Lihat')
+                    ->url(BookingResource::getUrl('edit', ['record' => $booking])),
+            ])
+            ->sendToDatabase($admins, isEventDispatched: true)
+            ->broadcast($admins);
     }
 }

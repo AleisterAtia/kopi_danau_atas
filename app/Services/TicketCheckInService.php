@@ -36,6 +36,14 @@ class TicketCheckInService
             return null;
         }
 
+        // A HID barcode/QR scanner types the full deep-link QR payload
+        // (see Booking::ticketQrPayload()) rather than the bare token —
+        // unwrap it before matching.
+        if (str_contains($token, 'token=')) {
+            parse_str((string) parse_url($token, PHP_URL_QUERY), $query);
+            $token = $query['token'] ?? $token;
+        }
+
         return Booking::with(['tourPackage', 'user', 'checkedInBy'])
             ->where('ticket_token', $token)
             ->first();
