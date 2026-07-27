@@ -190,6 +190,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 @media (max-width: 640px) {
     .hero-fact-sep { display: none; }
+    /* Di HP konten hero lebih tinggi dari layar; strip fakta yang absolute
+       menimpa tombol (dan menangkap sentuhannya). Kembalikan ke alur normal
+       di bawah konten, dan lepas min-height 100vh agar tidak ada yang ketimpa. */
+    .hero-section {
+        min-height: 0;
+        align-items: stretch;
+    }
+    .hero-facts {
+        position: static;
+    }
+    .hero-content {
+        padding-bottom: 3rem;
+    }
 }
 
 /* ── Section label ───────────────────── */
