@@ -83,4 +83,17 @@ class TicketCheckInTest extends TestCase
 
         $this->assertSame(TicketCheckInService::RESULT_NOT_FOUND, $outcome['result']);
     }
+
+    public function test_full_qr_deep_link_url_is_unwrapped_to_bare_token(): void
+    {
+        // A HID barcode/QR scanner types the full QR payload rather than a
+        // bare token — checkIn() must still resolve it to the same booking.
+        $staff = User::factory()->admin()->create();
+        $booking = Booking::factory()->paid()->create();
+
+        $outcome = $this->service()->checkIn($booking->ticketQrPayload(), $staff);
+
+        $this->assertSame(TicketCheckInService::RESULT_SUCCESS, $outcome['result']);
+        $this->assertSame($booking->id, $outcome['booking']->id);
+    }
 }
