@@ -38,6 +38,7 @@ class HomepageSection extends Model
         'title',
         'description',
         'extra_data',
+        'video_path',
         'sort_order',
     ];
 

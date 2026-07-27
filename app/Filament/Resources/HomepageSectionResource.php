@@ -51,6 +51,14 @@ class HomepageSectionResource extends Resource
                         ->label('Extra Data')
                         ->helperText('Additional key-value data (CTA text, subtitle, etc.)')
                         ->columnSpanFull(),
+
+                    Forms\Components\FileUpload::make('video_path')
+                        ->label('Video Profil Perusahaan')
+                        ->acceptedFileTypes(['video/mp4', 'video/webm'])
+                        ->directory('homepage/videos')
+                        ->maxSize(51200)
+                        ->helperText('Opsional. Maks. 50MB. Muncul sebagai tombol "Lihat Video" di section ini (hero/about).')
+                        ->columnSpanFull(),
                 ])->columns(2),
 
             Forms\Components\Section::make('Section Images')
