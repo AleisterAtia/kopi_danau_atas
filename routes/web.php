@@ -13,6 +13,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -85,6 +86,14 @@ Route::post('/email/verification-notification', function (Request $request) {
 | Authenticated Routes
 |--------------------------------------------------------------------------
 */
+
+// Used by the admin panel's "Aktifkan Notifikasi" button — kept outside the
+// 'verified' group below since it gates on Filament's own role check, not
+// public-site email verification.
+Route::middleware('auth')->group(function () {
+    Route::post('/push-subscription', [PushSubscriptionController::class, 'store'])->name('push-subscription.store');
+    Route::delete('/push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Booking

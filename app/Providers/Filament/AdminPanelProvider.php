@@ -43,7 +43,14 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotificationsPolling('30s')
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => Blade::render("@vite('resources/js/echo.js')"),
+                fn (): string => Blade::render("@vite(['resources/js/echo.js', 'resources/js/push-notifications.js'])")
+                    .'<meta name="vapid-public-key" content="'.config('webpush.vapid.public_key').'">',
+            )
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_END,
+                fn (): string => Blade::render(
+                    '<button type="button" id="enable-push-notifications" class="fi-btn fi-color-gray fi-btn-size-sm rounded-lg px-3 py-2 text-sm font-medium">🔔 Aktifkan Notifikasi</button>'
+                ),
             )
             ->plugin(
                 SpatieLaravelTranslatablePlugin::make()
