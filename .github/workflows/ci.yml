@@ -53,3 +53,24 @@ jobs:
 
       - name: Run tests
         run: php artisan test
+
+  deploy:
+    name: Deploy to VPS
+    needs: test
+    # Only main, and only on an actual push (not on pull_request builds,
+    # which run this same workflow for the CI checks above).
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH and redeploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_DEPLOY_PATH }}
+            git pull origin main
+            docker compose build
+            docker compose up -d
