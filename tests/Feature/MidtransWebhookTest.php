@@ -5,9 +5,13 @@ namespace Tests\Feature;
 use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\User;
+use App\Notifications\BookingPaidPushNotification;
 use App\Services\MidtransService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -32,6 +36,8 @@ class MidtransWebhookTest extends TestCase
         config(['midtrans.server_key' => self::SERVER_KEY]);
         // QR generation writes to the public disk; isolate it from real storage.
         Storage::fake('public');
+        // Never let a test hit the real Fonnte API.
+        Http::fake();
     }
 
     /**
@@ -186,6 +192,55 @@ class MidtransWebhookTest extends TestCase
         // still on the payment record for the admin to reconcile.
         $this->assertSame('refund', $payment->fresh()->status);
         $this->assertSame('completed', $payment->booking->fresh()->status);
+    }
+
+    public function test_settlement_sends_whatsapp_notification_to_admins_with_a_phone_number(): void
+    {
+        Mail::fake();
+        config(['services.fonnte.token' => 'test-token']);
+        User::factory()->admin()->create(['phone' => '081234567890']);
+        User::factory()->admin()->create(['phone' => null]); // must be skipped, not error
+
+        $payment = $this->pendingPayment();
+
+        $this->postJson(self::WEBHOOK_URL, $this->notificationFor($payment, 'settlement'))->assertOk();
+
+        // Booking::factory() also creates a TourPackage, which auto-translates
+        // via Gemini on save — scope to the Fonnte endpoint so that unrelated
+        // HTTP call (also captured by the blanket Http::fake()) isn't counted.
+        $this->assertCount(1, Http::recorded(fn ($request) => str_contains($request->url(), 'fonnte.com')));
+        Http::assertSent(function ($request) use ($payment) {
+            return $request->url() === 'https://api.fonnte.com/send'
+                && $request->hasHeader('Authorization', 'test-token')
+                && $request['target'] === '6281234567890'
+                && str_contains($request['message'], $payment->booking->booking_code);
+        });
+    }
+
+    public function test_settlement_skips_whatsapp_notification_when_fonnte_token_is_unset(): void
+    {
+        Mail::fake();
+        config(['services.fonnte.token' => null]);
+        User::factory()->admin()->create(['phone' => '081234567890']);
+
+        $payment = $this->pendingPayment();
+
+        $this->postJson(self::WEBHOOK_URL, $this->notificationFor($payment, 'settlement'))->assertOk();
+
+        $this->assertCount(0, Http::recorded(fn ($request) => str_contains($request->url(), 'fonnte.com')));
+    }
+
+    public function test_settlement_sends_push_notification_to_admins(): void
+    {
+        Mail::fake();
+        Notification::fake();
+        $admin = User::factory()->admin()->create();
+
+        $payment = $this->pendingPayment();
+
+        $this->postJson(self::WEBHOOK_URL, $this->notificationFor($payment, 'settlement'))->assertOk();
+
+        Notification::assertSentTo($admin, BookingPaidPushNotification::class);
     }
 
     public function test_notification_for_unknown_order_is_ignored(): void

@@ -10,6 +10,7 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "filament/filament": "3.3",
         "filament/spatie-laravel-translatable-plugin": "*",
+        "laravel-notification-channels/webpush": "^10.5",
         "laravel/framework": "^11.0",
         "laravel/reverb": "^1.0",
         "laravel/socialite": "^5.27",

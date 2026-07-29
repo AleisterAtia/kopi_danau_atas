@@ -7,11 +7,14 @@ use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
+use App\Notifications\BookingPaidPushNotification;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification as LaravelNotification;
 use Midtrans\Config;
 use Midtrans\Snap;
 use RuntimeException;
@@ -352,25 +355,96 @@ class MidtransService
     /**
      * Alert admins the moment a booking is actually paid (not when merely
      * placed) — this is the point at which staff need to act (confirm the
-     * booking). Sent both to the database (Filament bell) and broadcast
-     * over websockets (Reverb) for an instant toast, so nobody has to
-     * refresh the panel to see it.
+     * booking). Sent to the database (Filament bell) + broadcast over
+     * websockets (Reverb) for an instant in-panel toast, to WhatsApp for
+     * staff not looking at the panel, and as a native OS push notification
+     * for staff who opted in via "Aktifkan Notifikasi" but have no tab open.
      */
     protected function notifyAdminsOfPayment(Booking $booking): void
     {
         $admins = User::where('role', 'admin')->get();
 
-        Notification::make()
-            ->title('Pembayaran diterima')
-            ->body("{$booking->booking_code} — {$booking->guest_name} ({$booking->guest_count} orang) sudah bayar, menunggu konfirmasi.")
-            ->icon('heroicon-o-banknotes')
-            ->iconColor('success')
-            ->actions([
-                Action::make('view')
-                    ->label('Lihat')
-                    ->url(BookingResource::getUrl('edit', ['record' => $booking])),
-            ])
-            ->sendToDatabase($admins, isEventDispatched: true)
-            ->broadcast($admins);
+        // Each channel below gets its own try/catch: Reverb being down (or any
+        // other channel failing) must not stop the remaining channels from
+        // firing — WhatsApp and push are exactly the "admin isn't looking at
+        // the panel" fallbacks, so they especially can't depend on the panel's
+        // own realtime channel working.
+        try {
+            Notification::make()
+                ->title('Pembayaran diterima')
+                ->body("{$booking->booking_code} — {$booking->guest_name} ({$booking->guest_count} orang) sudah bayar, menunggu konfirmasi.")
+                ->icon('heroicon-o-banknotes')
+                ->iconColor('success')
+                ->actions([
+                    Action::make('view')
+                        ->label('Lihat')
+                        ->url(BookingResource::getUrl('edit', ['record' => $booking])),
+                ])
+                ->sendToDatabase($admins, isEventDispatched: true)
+                ->broadcast($admins);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send in-panel notification for booking '.$booking->booking_code, [
+                'exception' => $e->getMessage(),
+            ]);
+        }
+
+        $this->notifyAdminsOfPaymentViaWhatsapp($admins, $booking);
+
+        try {
+            LaravelNotification::send($admins, new BookingPaidPushNotification($booking));
+        } catch (\Throwable $e) {
+            Log::error('Failed to send push notification to admins for booking '.$booking->booking_code, [
+                'exception' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * WhatsApp leg of notifyAdminsOfPayment(), via the Fonnte gateway.
+     * No-op when FONNTE_TOKEN is unset (feature off, same fallback stance as
+     * GEMINI_API_KEY) — one admin's missing phone or a failed send is logged
+     * and skipped rather than blocking the others.
+     */
+    protected function notifyAdminsOfPaymentViaWhatsapp(\Illuminate\Database\Eloquent\Collection $admins, Booking $booking): void
+    {
+        if (blank(config('services.fonnte.token'))) {
+            return;
+        }
+
+        $message = "Booking baru dibayar!\n\n"
+            ."Kode: {$booking->booking_code}\n"
+            ."Nama: {$booking->guest_name}\n"
+            ."Jumlah tamu: {$booking->guest_count}\n\n"
+            .'Konfirmasi di: '.BookingResource::getUrl('edit', ['record' => $booking]);
+
+        foreach ($admins as $admin) {
+            if (blank($admin->phone)) {
+                continue;
+            }
+
+            try {
+                Http::withHeaders(['Authorization' => config('services.fonnte.token')])
+                    ->asForm()
+                    ->post('https://api.fonnte.com/send', [
+                        'target' => $this->toFonnteTarget($admin->phone),
+                        'message' => $message,
+                    ]);
+            } catch (\Throwable $e) {
+                Log::error('Failed to send WhatsApp payment notification to admin '.$admin->id, [
+                    'exception' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Fonnte expects the country code — a local "08xx" number never reaches
+     * the device. Storage keeps whatever an admin typed into their profile.
+     */
+    protected function toFonnteTarget(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+
+        return str_starts_with($digits, '0') ? '62'.substr($digits, 1) : $digits;
     }
 }

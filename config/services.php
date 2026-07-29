@@ -55,4 +55,11 @@ return [
         'secret' => env('TURNSTILE_SECRET_KEY'),
     ],
 
+    // Fonnte — unofficial WhatsApp gateway, alerts admin phones the moment a
+    // booking is paid (see MidtransService::notifyAdminsOfPaymentViaWhatsapp).
+    // No token = feature is off.
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+    ],
+
 ];
