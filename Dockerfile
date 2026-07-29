@@ -5,6 +5,20 @@
 # ──────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS assets
 WORKDIR /app
+
+# Vite bakes these into the JS bundle at build time — a runtime .env change
+# alone won't take effect, the image must be rebuilt. Must be the PUBLIC
+# wss:// address (see docs/deployment.md), not the internal REVERB_HOST used
+# server-side.
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+ENV VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY \
+    VITE_REVERB_HOST=$VITE_REVERB_HOST \
+    VITE_REVERB_PORT=$VITE_REVERB_PORT \
+    VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY vite.config.js ./

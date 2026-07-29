@@ -1,10 +1,14 @@
 # Reproducible local/pilot deployment for E-Tourism CV Kopi Danau Diatas.
 #
-# Four services mirror what production actually needs:
-#   app       — the web application (php artisan serve on :8000)
-#   queue     — the queue worker (without it, confirmation e-mails never send)
-#   scheduler — the cron runner (without it, quota never frees & auto-complete dies)
-#   db        — MySQL 8
+# Services mirror what production actually needs:
+#   app        — the web application (php artisan serve on :8000)
+#   queue      — the queue worker (without it, confirmation e-mails never send)
+#   scheduler  — the cron runner (without it, quota never frees & auto-complete dies)
+#   reverb     — websocket server for realtime admin notifications
+#   cloudflared — exposes app+reverb over HTTPS/WSS with no port-forwarding or
+#                 certificate management (optional — remove if you terminate
+#                 TLS some other way, e.g. Caddy/Nginx + a public IP)
+#   db         — MySQL 8
 #
 # Usage:
 #   1. Copy .env.example -> .env, then set:  DB_HOST=db  DB_CONNECTION=mysql
@@ -13,12 +17,23 @@
 #   3. docker compose run --rm app php artisan key:generate
 #   4. docker compose up -d
 #
-# See docs/deployment.md for the full walkthrough.
+# See docs/deployment.md for the full walkthrough (including the Cloudflare
+# Tunnel dashboard setup that TUNNEL_TOKEN below depends on).
+
+# app/queue/scheduler/reverb all build the same image, so the Vite build
+# args (baked into the JS bundle — see Dockerfile) must be identical on all
+# four regardless of which one `docker compose build` happens to build last.
+x-build: &build
+  context: .
+  args:
+    VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
+    VITE_REVERB_HOST: ${VITE_REVERB_HOST}
+    VITE_REVERB_PORT: ${VITE_REVERB_PORT}
+    VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME}
 
 services:
   app:
-    build:
-      context: .
+    build: *build
     image: kopi-danau-atas:latest
     env_file: .env
     environment:
@@ -31,8 +46,7 @@ services:
     restart: unless-stopped
 
   queue:
-    build:
-      context: .
+    build: *build
     image: kopi-danau-atas:latest
     env_file: .env
     command: php artisan queue:work --tries=3 --max-time=3600
@@ -42,14 +56,33 @@ services:
     restart: unless-stopped
 
   scheduler:
-    build:
-      context: .
+    build: *build
     image: kopi-danau-atas:latest
     env_file: .env
     command: php artisan schedule:work
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  reverb:
+    build: *build
+    image: kopi-danau-atas:latest
+    env_file: .env
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - app
+      - reverb
     restart: unless-stopped
 
   db:
