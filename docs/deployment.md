@@ -143,3 +143,45 @@ database — cepat dan deterministik.
 
 Workflow rilis manual (`.github/workflows/auto-tag-release.yml`) tetap terpisah
 dan tidak terpengaruh.
+
+---
+
+## 5. Continuous Deployment (CD) — auto-deploy ke VPS
+
+Job `deploy` di `ci.yml` jalan **hanya setelah job `test` lolos, dan hanya untuk
+push ke `main`** (bukan pull request) — SSH ke VPS lalu `git pull` + rebuild.
+Tanpa ini, push ke GitHub tidak menyentuh VPS sama sekali; harus manual.
+
+### Setup sekali di VPS
+
+```bash
+# Bikin key pair khusus untuk deploy (jangan pakai key pribadi Anda)
+ssh-keygen -t ed25519 -f ~/.ssh/deploy_key -N ""
+cat ~/.ssh/deploy_key.pub >> ~/.ssh/authorized_keys
+
+# Clone repo ke path yang akan dipakai terus-menerus
+git clone <url-repo-anda> ~/kopi-danau-atas
+cd ~/kopi-danau-atas
+cp .env.example .env   # lalu isi semua kredensial produksi
+docker compose build
+docker compose run --rm app php artisan key:generate
+docker compose up -d
+```
+
+### Setup sekali di GitHub
+
+Repo → **Settings → Secrets and variables → Actions** → tambah 4 secret:
+
+| Secret | Isi |
+|--------|-----|
+| `VPS_HOST` | IP atau domain VPS |
+| `VPS_USERNAME` | User SSH di VPS (mis. `root` atau user non-root dengan akses `docker`) |
+| `VPS_SSH_KEY` | Isi **private key** `~/.ssh/deploy_key` (bukan `.pub`) dari langkah di atas |
+| `VPS_DEPLOY_PATH` | Path absolut hasil clone di atas, mis. `/root/kopi-danau-atas` |
+
+Setelah ini terisi, tiap push ke `main` yang lolos test otomatis `git pull` +
+`docker compose build && up -d` di VPS — tidak perlu SSH manual lagi.
+
+> **Catatan RAM.** `docker compose build` di VPS 1GB bisa spike memori saat
+> `npm run build` jalan (lihat bagian 1b) — kalau auto-deploy sering gagal
+> karena OOM, tambah swap file atau naik ke VPS 2GB.
