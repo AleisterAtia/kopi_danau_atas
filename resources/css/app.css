@@ -188,14 +188,50 @@ h1, h2, h3, h4, h5, h6 {
     height: 34px;
     background: rgba(255,255,255,0.16);
 }
+
+/* ── Hero fact rotator (mobile signature) ── */
+.hero-fact-dots {
+    display: flex;
+    gap: 0.375rem;
+    margin-top: 0.85rem;
+}
+.hero-fact-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.3);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.hero-fact-dot.is-active {
+    background: var(--color-accent-warm);
+    transform: scale(1.4);
+}
+
+/* Reserve a fixed box and stack facts on top of each other (instead of in
+   normal flow) so the crossfade doesn't jump/wrap when swapping between a
+   short and a long fact (e.g. "100% Kopi Arabika" vs "Dataran Tinggi Danau
+   Diatas") — without this, the outgoing and incoming items briefly both
+   occupy flow space, snapping the layout as one fades past the other. */
+.hero-fact-rotator {
+    position: relative;
+    min-height: 4.75rem;
+}
+.hero-fact-rotator .hero-fact {
+    position: absolute;
+    inset: 0;
+}
+
 @media (max-width: 640px) {
     .hero-fact-sep { display: none; }
-    /* Di HP konten hero lebih tinggi dari layar; strip fakta yang absolute
-       menimpa tombol (dan menangkap sentuhannya). Kembalikan ke alur normal
-       di bawah konten, dan lepas min-height 100vh agar tidak ada yang ketimpa. */
+    /* Di HP konten hero lebih tinggi dari layar dan .hero-section adalah flex
+       row (default) — tanpa override ini .hero-content & .hero-facts (begitu
+       jadi position:static, ikut masuk flow flex) duduk BERDAMPINGAN, bukan
+       bertumpuk, sehingga strip fakta muncul terjepit di kanan-atas. Susun
+       vertikal dan lepas min-height 100vh agar tidak ada yang ketimpa. */
     .hero-section {
         min-height: 0;
         align-items: stretch;
+        flex-direction: column;
     }
     .hero-facts {
         position: static;
