@@ -105,7 +105,7 @@ class Reports extends Page implements HasForms
         ])->setPaper('a4', 'portrait');
 
         return Response::streamDownload(
-            fn () => print($pdf->output()),
+            fn () => print ($pdf->output()),
             "laporan-{$this->periodFrom()->toDateString()}-{$this->periodUntil()->toDateString()}.pdf"
         );
     }
