@@ -41,6 +41,8 @@ services:
       RUN_MIGRATIONS: "true"
     ports:
       - "127.0.0.1:8000:8000"
+    volumes:
+      - storage_data:/var/www/html/storage/app
     depends_on:
       db:
         condition: service_healthy
@@ -51,6 +53,8 @@ services:
     image: kopi-danau-atas:latest
     env_file: .env
     command: php artisan queue:work --tries=3 --max-time=3600
+    volumes:
+      - storage_data:/var/www/html/storage/app
     depends_on:
       db:
         condition: service_healthy
@@ -61,6 +65,8 @@ services:
     image: kopi-danau-atas:latest
     env_file: .env
     command: php artisan schedule:work
+    volumes:
+      - storage_data:/var/www/html/storage/app
     depends_on:
       db:
         condition: service_healthy
@@ -96,3 +102,4 @@ services:
 
 volumes:
   dbdata:
+  storage_data:
