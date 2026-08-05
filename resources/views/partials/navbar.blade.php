@@ -55,10 +55,6 @@
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 {{ __('Pesanan Saya') }}
                             </a>
-                            <a href="{{ route('wishlist.index') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                                {{ __('Favorit Saya') }}
-                            </a>
                             <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 {{ __('Profil') }}
@@ -106,7 +102,6 @@
             @auth
                 <div class="border-t border-gray-100 my-2 pt-2">
                     <a href="{{ route('booking.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Pesanan Saya') }}</a>
-                    <a href="{{ route('wishlist.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Favorit Saya') }}</a>
                     <a href="{{ route('profile.edit') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Profil') }}</a>
                     <form method="POST" action="{{ route('logout') }}">@csrf
                         <button type="submit" class="block w-full text-left px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50">{{ __('Keluar') }}</button>

@@ -16,7 +16,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TourPackageController;
-use App\Http\Controllers\WishlistController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -94,9 +93,6 @@ Route::post('/email/verification-notification', function (Request $request) {
 Route::middleware('auth')->group(function () {
     Route::post('/push-subscription', [PushSubscriptionController::class, 'store'])->name('push-subscription.store');
     Route::delete('/push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
-
-    Route::get('/favorit', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/paket-wisata/{package}/favorit', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

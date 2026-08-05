@@ -24,11 +24,7 @@
                 </li>
             </ol>
         </nav>
-        <div class="flex items-start gap-4">
-            <h1 class="text-4xl md:text-5xl font-bold text-white font-heading tracking-[-0.02em]">{{ $package->name }}</h1>
-            <x-wishlist-heart :package="$package" :wishlisted="$isWishlisted"
-                class="mt-2 w-11 h-11 rounded-full bg-white/10 backdrop-blur-sm text-white/80 hover:text-red-400 flex-shrink-0" />
-        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-white font-heading tracking-[-0.02em]">{{ $package->name }}</h1>
     </div>
 </div>
 

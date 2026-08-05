@@ -58,12 +58,6 @@ class TourPackageController extends Controller
 
         $categories = PackageCategory::orderBy('name')->get();
 
-        // Wishlisted package IDs for the logged-in user, fetched once so each
-        // card's heart icon can render its state without an N+1 query.
-        $wishlistedIds = auth()->check()
-            ? auth()->user()->favoritePackages()->pluck('tour_packages.id')->all()
-            : [];
-
         return view('pages.packages.index', compact(
             'packages',
             'categories',
@@ -71,8 +65,7 @@ class TourPackageController extends Controller
             'categorySlugs',
             'priceMin',
             'priceMax',
-            'sort',
-            'wishlistedIds'
+            'sort'
         ));
     }
 
@@ -88,9 +81,6 @@ class TourPackageController extends Controller
             ->withAvg('reviews', 'rating')
             ->firstOrFail();
 
-        $isWishlisted = auth()->check()
-            && auth()->user()->favoritePackages()->where('tour_package_id', $package->id)->exists();
-
-        return view('pages.packages.show', compact('package', 'isWishlisted'));
+        return view('pages.packages.show', compact('package'));
     }
 }

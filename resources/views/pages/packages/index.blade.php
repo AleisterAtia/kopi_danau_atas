@@ -115,8 +115,6 @@
                         <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-primary">
                             Rp {{ number_format($package->price, 0, ',', '.') }}
                         </div>
-                        <x-wishlist-heart :package="$package" :wishlisted="in_array($package->id, $wishlistedIds ?? [])"
-                            class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm text-text-secondary hover:text-red-500" />
                     </div>
                     
                     <div class="p-6 flex flex-col flex-grow">
