@@ -21,6 +21,13 @@ async function enablePushNotifications(button) {
 
     const registration = await navigator.serviceWorker.register('/sw.js');
     const vapidKey = document.querySelector('meta[name="vapid-public-key"]').content;
+
+    // subscribe() is safe to call even when a subscription already exists —
+    // the browser just hands back the existing one instead of re-prompting.
+    // We still POST it below every time: that's what makes this self-healing
+    // if the server-side row was ever deleted (e.g. ReportHandler pruning a
+    // subscription after a failed delivery) — the admin doesn't have to
+    // notice or do anything, it just gets recreated on next page load.
     const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
@@ -35,8 +42,10 @@ async function enablePushNotifications(button) {
         body: JSON.stringify(subscription),
     });
 
-    button.textContent = 'Notifikasi aktif';
-    button.disabled = true;
+    if (button) {
+        button.textContent = 'Notifikasi aktif';
+        button.disabled = true;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,10 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    if (Notification?.permission === 'granted') {
-        button.textContent = 'Notifikasi aktif';
-        button.disabled = true;
-    }
-
     button.addEventListener('click', () => enablePushNotifications(button));
+
+    // Re-sync on every load instead of only on the very first prompt —
+    // previously this only ran once (permission === 'default'), so once
+    // granted, the button just relabeled itself "active" from the browser
+    // permission alone without ever re-confirming the server still has the
+    // subscription. Skip only when the admin explicitly denied notifications.
+    if (Notification?.permission !== 'denied') {
+        enablePushNotifications(button);
+    }
 });

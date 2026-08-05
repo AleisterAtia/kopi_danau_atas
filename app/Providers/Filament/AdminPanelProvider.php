@@ -40,7 +40,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
+            // Real push happens instantly via the Reverb broadcast already
+            // fired alongside sendToDatabase() in
+            // MidtransService::notifyAdminsOfPayment() — this short polling
+            // interval is just the fallback for tabs open before Reverb
+            // reconnects, or if the broadcast layer is ever down.
+            ->databaseNotificationsPolling('10s')
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => Blade::render("@vite(['resources/js/echo.js', 'resources/js/push-notifications.js'])")

@@ -90,6 +90,7 @@ class TourPackageResource extends Resource
                                 ->image()
                                 ->directory('packages')
                                 ->required()
+                                ->maxSize(5120)
                                 ->imageResizeMode('cover')
                                 ->imageCropAspectRatio('16:9')
                                 ->imageResizeTargetWidth('1200')

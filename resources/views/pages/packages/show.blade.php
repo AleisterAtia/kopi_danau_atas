@@ -110,6 +110,17 @@
                     @endif
                 </div>
 
+                <!-- Cancellation policy -->
+                <div class="bg-white rounded-xl border border-border p-6 md:p-8">
+                    <h2 class="text-xl font-bold font-heading mb-3">{{ __('Kebijakan Pembatalan') }}</h2>
+                    <p class="text-text-secondary leading-relaxed">
+                        {{ __('Pesanan yang belum dibayar dapat dibatalkan sendiri tanpa biaya. Untuk pesanan yang sudah dibayar, pembatalan diproses oleh admin dan dana dikembalikan secara manual setelah dikonfirmasi.') }}
+                    </p>
+                    <a href="{{ route('home') }}#pembatalan" class="inline-block mt-3 text-primary font-semibold hover:underline">
+                        {{ __('Selengkapnya di FAQ') }} &rarr;
+                    </a>
+                </div>
+
                 <!-- Reviews -->
                 <div class="bg-white rounded-xl border border-border p-6 md:p-8">
                     <h2 class="text-2xl font-bold font-heading mb-6">{{ __('Ulasan Pengunjung') }}</h2>

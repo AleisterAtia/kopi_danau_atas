@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Faq;
 use App\Models\HomepageSection;
 use App\Models\Review;
 use App\Models\SiteSetting;
@@ -47,6 +48,8 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
+        $faqs = Faq::orderBy('sort_order')->get();
+
         // SiteSetting::map() is cached forever and busted by the
         // observer on save/delete, so the 9 lookups below cost a single
         // DB read on cold start and zero on subsequent renders.
@@ -65,7 +68,7 @@ class HomeController extends Controller
 
         return view('pages.home', compact(
             'hero', 'about', 'education', 'testimonials',
-            'featuredPackages', 'approvedReviews', 'settings'
+            'featuredPackages', 'approvedReviews', 'settings', 'faqs'
         ));
     }
 }

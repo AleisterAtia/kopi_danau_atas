@@ -194,6 +194,34 @@ class MidtransWebhookTest extends TestCase
         $this->assertSame('completed', $payment->booking->fresh()->status);
     }
 
+    /**
+     * A customer can reopen Snap and retry with a different payment method
+     * under the same order_id — each attempt gets its own transaction_id.
+     * If the *first* (abandoned) attempt's cancel notification is delivered
+     * late, after the *second* attempt already settled, it must not undo the
+     * payment: the money already moved.
+     */
+    public function test_stale_cancel_notification_does_not_unpay_an_already_settled_booking(): void
+    {
+        Mail::fake();
+        $payment = $this->pendingPayment();
+
+        $settleNotification = $this->notificationFor($payment, 'settlement', [
+            'transaction_id' => 'txn-attempt-2',
+        ]);
+        $this->postJson(self::WEBHOOK_URL, $settleNotification)->assertOk();
+        $this->assertSame('paid', $payment->booking->fresh()->status);
+
+        $staleCancelNotification = $this->notificationFor($payment, 'cancel', [
+            'transaction_id' => 'txn-attempt-1',
+        ]);
+        $this->postJson(self::WEBHOOK_URL, $staleCancelNotification)->assertOk();
+
+        $payment->refresh();
+        $this->assertSame('settlement', $payment->status, 'stale cancel must not overwrite a settled payment');
+        $this->assertSame('paid', $payment->booking->fresh()->status, 'stale cancel must not unpay the booking');
+    }
+
     public function test_settlement_sends_whatsapp_notification_to_admins_with_a_phone_number(): void
     {
         Mail::fake();

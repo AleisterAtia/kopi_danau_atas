@@ -61,28 +61,32 @@ npm run build
 
 ## Menjalankan (development)
 
-Sistem memerlukan **tiga proses** agar berfungsi penuh. Cara termudah memakai
+Sistem memerlukan **beberapa proses** agar berfungsi penuh. Cara termudah memakai
 skrip gabungan:
 
 ```bash
 composer dev
 ```
 
-Skrip ini menyalakan sekaligus: **web server**, **queue worker**, **log viewer (pail)**, dan **Vite**.
+Skrip ini menyalakan sekaligus lima proses: **web server**, **queue worker**
+(`queue:listen`), **log viewer (pail)**, **Vite**, dan **Reverb** (websocket
+server untuk notifikasi realtime di panel admin).
 
-Bila ingin menjalankan manual, butuh minimal tiga terminal:
+Bila ingin menjalankan manual, butuh minimal empat terminal:
 
 ```bash
 php artisan serve            # 1) Web server
 php artisan queue:work       # 2) Queue worker  (WAJIB — lihat catatan di bawah)
-npm run dev                  # 3) Vite (hot reload aset)
+php artisan reverb:start     # 3) Websocket server (WAJIB untuk notifikasi realtime admin)
+npm run dev                  # 4) Vite (hot reload aset)
 ```
 
-### ⚠️ Dua dependensi runtime yang WAJIB ada
+### ⚠️ Dependensi runtime yang WAJIB ada
 
 | Proses | Bila tidak dijalankan |
 |--------|-----------------------|
-| **`php artisan queue:work`** | Email konfirmasi + e-ticket + invoice **tidak akan terkirim** (email di-`queue`, bukan dikirim sinkron). |
+| **`php artisan queue:work`** | Email konfirmasi + e-ticket + invoice **tidak akan terkirim** (email di-`queue`, bukan dikirim sinkron), dan notifikasi WhatsApp/push ke admin juga tertunda (dikirim via job antrian, lihat `app/Jobs/NotifyAdminsOfBookingPaid.php`). |
+| **`php artisan reverb:start`** | Lonceng notifikasi **tidak update realtime** — hanya fallback polling tiap beberapa detik yang jalan (`databaseNotificationsPolling()` di `AdminPanelProvider`). Tabel booking & widget "Latest Bookings" tetap auto-refresh tanpa Reverb karena keduanya pakai polling Livewire (`->poll()`), bukan websocket. |
 | **Scheduler (`php artisan schedule:run` tiap menit via cron)** | Booking `pending` **tidak pernah kedaluwarsa** (kuota tidak dibebaskan) dan booking lampau **tidak auto-complete**. |
 
 Scheduler menjalankan dua perintah terjadwal (`routes/console.php`):
@@ -96,10 +100,13 @@ Di server produksi, daftarkan satu cron:
 * * * * * cd /path/ke/proyek && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-dan jalankan worker sebagai layanan (mis. `supervisor` / `systemd`):
+dan jalankan worker + Reverb sebagai layanan (mis. `supervisor` / `systemd`,
+atau lihat `docker-compose.yml` yang sudah menyediakan container terpisah
+untuk `queue`, `scheduler`, dan `reverb`):
 
 ```bash
 php artisan queue:work --tries=3 --timeout=90
+php artisan reverb:start --host=0.0.0.0 --port=8080
 ```
 
 ---
@@ -129,6 +136,62 @@ php artisan queue:work --tries=3 --timeout=90
    GOOGLE_CLIENT_SECRET=xxxx
    GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
    ```
+
+### Notifikasi realtime admin (Reverb)
+Panel admin (`/admin`) menampilkan lonceng notifikasi & tabel booking yang
+update otomatis tanpa refresh, memakai **Laravel Reverb** (websocket
+self-hosted) + polling singkat sebagai fallback.
+
+1. Jalankan `php artisan reverb:start` (sudah termasuk di `composer dev`).
+2. Isi `REVERB_APP_ID`/`REVERB_APP_KEY`/`REVERB_APP_SECRET` di `.env` (bebas
+   diisi string acak apa saja, asal konsisten) dan pastikan `VITE_REVERB_*`
+   ikut ter-set (nilainya mengikuti `REVERB_*` lewat `${...}` di
+   `.env.example`).
+3. **Di produksi**: `REVERB_*` (server-ke-server) dan `VITE_REVERB_*`
+   (di-bundle ke browser, harus alamat publik `wss://`) **tidak boleh sama**
+   — lihat komentar di `.env.example` dan `docs/deployment.md`. Setup yang
+   sudah disiapkan di `docker-compose.yml` memakai Cloudflare Tunnel supaya
+   tidak perlu urus sertifikat TLS manual.
+
+### WhatsApp admin (Fonnte) — opsional
+Mengirim WhatsApp ke nomor HP admin (kolom `phone` di profil user) setiap
+ada booking yang dibayar.
+
+1. Daftar di <https://fonnte.com>, hubungkan nomor WhatsApp sebagai device,
+   salin token-nya.
+2. Isi `FONNTE_TOKEN` di `.env`. Kosongkan untuk mematikan fitur ini
+   (fail-soft, tidak error).
+
+### Push notification browser (Web Push) — opsional
+Tombol "Aktifkan Notifikasi" di topbar admin mengirim notifikasi OS-level
+(via Chrome/Firefox) walau tab panel tidak terbuka.
+
+1. Generate key pair sekali: `php artisan webpush:vapid` — otomatis
+   menuliskan `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` ke `.env`.
+2. Isi `VAPID_SUBJECT` (opsional; bila kosong jatuh ke `APP_URL`).
+3. **Wajib HTTPS** — Web Push API diblokir browser di koneksi non-HTTPS
+   kecuali `localhost`. Di produksi, `APP_URL` harus `https://...` (lihat
+   [Checklist produksi](#checklist-produksi-ringkas)).
+4. Izin notifikasi & subscription **terikat per-origin browser** — pindah
+   dari `localhost:8000` ke domain produksi berarti setiap admin harus
+   klik izinkan sekali lagi di domain yang sebenarnya (bukan bug).
+
+### Auto-translate konten (Gemini) — opsional
+Konten admin (nama/deskripsi paket, dll.) yang punya versi Bahasa Indonesia
+otomatis diterjemahkan ke Inggris saat disimpan, lewat Google Gemini.
+
+1. Ambil API key gratis di <https://aistudio.google.com/apikey>.
+2. Isi `GEMINI_API_KEY` di `.env`. Kosongkan untuk mematikan (fail-soft —
+   versi Inggris jatuh ke teks Indonesia sebagai fallback, bukan kosong).
+3. `php artisan content:translate` — backfill terjemahan yang belum ada,
+   aman dijalankan berulang.
+
+### Captcha pendaftaran (Cloudflare Turnstile) — opsional
+1. Daftar site key gratis di <https://dash.cloudflare.com> → **Turnstile**
+   (tambahkan `localhost` untuk dev).
+2. Isi **keduanya** `TURNSTILE_SITE_KEY` & `TURNSTILE_SECRET_KEY` — isi
+   salah satu saja membuat form registrasi tidak bisa disubmit. Kosongkan
+   keduanya untuk mematikan captcha.
 
 ---
 
@@ -163,8 +226,21 @@ vendor/bin/pint
 ## Checklist produksi (ringkas)
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`, `APP_KEY` ter-generate.
+- [ ] `APP_URL` diisi domain produksi dengan **`https://`** (dipakai juga sebagai
+      fallback `VAPID_SUBJECT` untuk push notification — lihat di bawah).
 - [ ] `MIDTRANS_IS_PRODUCTION=true` + kunci produksi; webhook URL produksi terdaftar.
-- [ ] Queue worker berjalan sebagai layanan; cron `schedule:run` aktif.
+- [ ] Queue worker (`queue:work`) berjalan sebagai layanan; cron `schedule:run` aktif.
+- [ ] **Reverb** (`reverb:start`) berjalan sebagai layanan, dan bisa diakses lewat
+      `wss://` publik (mis. via Cloudflare Tunnel di `docker-compose.yml`) —
+      tanpa ini, lonceng notifikasi admin jatuh ke polling saja (tabel booking
+      tidak terpengaruh, itu polling Livewire biasa, bukan websocket).
+- [ ] Situs benar-benar diakses lewat HTTPS (bukan cuma `APP_URL` yang diisi
+      https) — Web Push API diblokir browser di koneksi non-HTTPS.
+- [ ] `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` terisi (boleh reuse dari dev);
+      admin perlu klik "Aktifkan Notifikasi" ulang di domain produksi karena
+      izin browser terikat per-origin.
+- [ ] `FONNTE_TOKEN` terisi & valid bila notifikasi WhatsApp admin dipakai
+      (token yang expired gagal **senyap** kalau tidak dicek manual).
 - [ ] `php artisan storage:link` dijalankan; aset dibangun (`npm run build`).
 - [ ] `php artisan config:cache route:cache view:cache` untuk performa.
 - [ ] Backup database & folder `storage/app`.

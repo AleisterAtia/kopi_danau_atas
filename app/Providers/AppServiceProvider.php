@@ -12,7 +12,10 @@ use App\Observers\HomepageImageObserver;
 use App\Observers\HomepageSectionObserver;
 use App\Observers\SiteSettingObserver;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use NotificationChannels\WebPush\Events\NotificationFailed;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider
@@ -44,5 +47,20 @@ class AppServiceProvider extends ServiceProvider
         SiteSetting::observe(SiteSettingObserver::class);
         HomepageSection::observe(HomepageSectionObserver::class);
         HomepageImage::observe(HomepageImageObserver::class);
+
+        // ReportHandler silently deletes a PushSubscription row when Web Push
+        // reports it expired (404/410), and dispatches this event either way
+        // — without a listener, failed/pruned push deliveries left zero trace
+        // anywhere. Just logging; the deletion itself is the package's job.
+        Event::listen(function (NotificationFailed $event) {
+            Log::warning('Web push delivery failed', [
+                'subscribable_type' => $event->subscription->subscribable_type,
+                'subscribable_id' => $event->subscription->subscribable_id,
+                'endpoint' => $event->report->getEndpoint(),
+                'reason' => $event->report->getReason(),
+                'expired' => $event->report->isSubscriptionExpired(),
+                'response' => $event->report->getResponseContent(),
+            ]);
+        });
     }
 }

@@ -19,11 +19,16 @@ class AutoCompleteBookings extends Command
 
     public function handle(): int
     {
-        $count = Booking::whereIn('status', ['paid', 'confirmed'])
+        // Per-model update (not a query-builder mass update) so
+        // BookingObserver fires: enforces the transition is legal and writes
+        // the "Booking status changed" audit log line.
+        $bookings = Booking::whereIn('status', ['paid', 'confirmed'])
             ->whereDate('visit_date', '<', today())
-            ->update(['status' => 'completed']);
+            ->get();
 
-        $this->info("Auto-completed {$count} booking(s).");
+        $bookings->each->update(['status' => 'completed']);
+
+        $this->info("Auto-completed {$bookings->count()} booking(s).");
 
         return self::SUCCESS;
     }

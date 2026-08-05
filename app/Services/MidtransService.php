@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Filament\Resources\BookingResource;
+use App\Jobs\NotifyAdminsOfBookingPaid;
 use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use App\Models\Payment;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Notifications\BookingPaidPushNotification;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -34,8 +36,11 @@ class MidtransService
      * Create (or refresh) a Snap token for a booking.
      *
      * Behaviour:
-     * - If the booking is already paid/confirmed/completed → reject.
-     *   The user should not be able to pay twice.
+     * - Only a booking still in `pending` may be paid. Anything else
+     *   (paid/confirmed/completed → already paid; expired/cancelled →
+     *   dead, quota may already be resold) → reject. A stale checkout
+     *   tab replaying this request after the booking died must not be
+     *   able to take money for a booking that will never be honored.
      * - If a Payment row already exists with status `pending` → reuse
      *   its `midtrans_order_id` so the existing webhook
      *   correlation continues to work. We still ask Midtrans for a
@@ -46,8 +51,8 @@ class MidtransService
     {
         $booking->load(['user', 'tourPackage', 'payment']);
 
-        if (in_array($booking->status, ['paid', 'confirmed', 'completed'], true)) {
-            throw new RuntimeException('Booking ini sudah dibayar dan tidak dapat dibayar ulang.');
+        if ($booking->status !== 'pending') {
+            throw new RuntimeException('Booking ini sudah tidak dapat dibayar (status: '.$booking->status.').');
         }
 
         $existingPayment = $booking->payment;
@@ -68,11 +73,15 @@ class MidtransService
                 'email' => $booking->guest_email ?? $booking->user->email,
                 'phone' => $booking->guest_phone ?? $booking->user->phone ?? '',
             ],
+            // Single line item at quantity 1, priced at the booking's frozen
+            // total_price (not the package's live price) — guarantees this
+            // always sums to exactly gross_amount, even if an admin edits the
+            // package price while this booking sits pending.
             'item_details' => [
                 [
                     'id' => $booking->tour_package_id,
-                    'price' => (int) round($booking->tourPackage->price),
-                    'quantity' => $booking->guest_count,
+                    'price' => (int) round($booking->total_price),
+                    'quantity' => 1,
                     'name' => substr($booking->tourPackage->name, 0, 50),
                 ],
             ],
@@ -219,12 +228,36 @@ class MidtransService
                     return $this->applyBookingStatus($payment, 'paid') && ! $wasAlreadyPaid;
 
                 case 'expire':
+                    // A customer can reopen Snap and retry with a different
+                    // payment method under the same order_id, producing a new
+                    // transaction_id per attempt. If an *older* attempt's
+                    // expire/cancel/deny notification is delivered late — after
+                    // a *newer* attempt already settled — it must not undo the
+                    // money that already came in. $payment->status is the
+                    // committed DB state, so this check is race-safe regardless
+                    // of notification delivery order.
+                    if ($payment->status === 'settlement') {
+                        Log::warning('Ignoring stale expire notification for an already-settled payment', [
+                            'order_id' => $orderId,
+                            'transaction_id' => $incomingTransactionId,
+                        ]);
+                        break;
+                    }
+
                     $payment->update(['status' => 'expire']);
                     $this->applyBookingStatus($payment, 'expired');
                     break;
 
                 case 'cancel':
                 case 'deny':
+                    if ($payment->status === 'settlement') {
+                        Log::warning('Ignoring stale cancel/deny notification for an already-settled payment', [
+                            'order_id' => $orderId,
+                            'transaction_id' => $incomingTransactionId,
+                        ]);
+                        break;
+                    }
+
                     $payment->update(['status' => $incomingStatus]);
                     $this->applyBookingStatus($payment, 'cancelled');
                     break;
@@ -344,9 +377,13 @@ class MidtransService
         }
 
         try {
-            $this->notifyAdminsOfPayment($booking);
+            // Queued: WhatsApp (Fonnte) and the realtime broadcast are
+            // external HTTP calls with nothing to do with the paying
+            // customer — running them inline here was adding several
+            // seconds to the checkout redirect / webhook response.
+            NotifyAdminsOfBookingPaid::dispatch($booking);
         } catch (\Throwable $e) {
-            Log::error('Failed to notify admins of paid booking '.$booking->booking_code, [
+            Log::error('Failed to dispatch admin payment notification job for booking '.$booking->booking_code, [
                 'exception' => $e->getMessage(),
             ]);
         }
@@ -360,7 +397,7 @@ class MidtransService
      * staff not looking at the panel, and as a native OS push notification
      * for staff who opted in via "Aktifkan Notifikasi" but have no tab open.
      */
-    protected function notifyAdminsOfPayment(Booking $booking): void
+    public function notifyAdminsOfPayment(Booking $booking): void
     {
         $admins = User::where('role', 'admin')->get();
 
@@ -405,7 +442,7 @@ class MidtransService
      * GEMINI_API_KEY) — one admin's missing phone or a failed send is logged
      * and skipped rather than blocking the others.
      */
-    protected function notifyAdminsOfPaymentViaWhatsapp(\Illuminate\Database\Eloquent\Collection $admins, Booking $booking): void
+    protected function notifyAdminsOfPaymentViaWhatsapp(Collection $admins, Booking $booking): void
     {
         if (blank(config('services.fonnte.token'))) {
             return;
@@ -423,12 +460,23 @@ class MidtransService
             }
 
             try {
-                Http::withHeaders(['Authorization' => config('services.fonnte.token')])
+                $response = Http::withHeaders(['Authorization' => config('services.fonnte.token')])
                     ->asForm()
                     ->post('https://api.fonnte.com/send', [
                         'target' => $this->toFonnteTarget($admin->phone),
                         'message' => $message,
                     ]);
+
+                // Http only throws on network-level failure (timeout, DNS...).
+                // Fonnte returning 401/403 (e.g. expired token) is a normal
+                // HTTP response, not an exception — must be checked explicitly
+                // or a dead token fails completely silently.
+                if ($response->failed()) {
+                    Log::error('Fonnte rejected WhatsApp payment notification to admin '.$admin->id, [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Log::error('Failed to send WhatsApp payment notification to admin '.$admin->id, [
                     'exception' => $e->getMessage(),

@@ -13,11 +13,16 @@ class ExpirePendingBookings extends Command
 
     public function handle(): int
     {
-        $expiredCount = Booking::where('status', 'pending')
+        // Per-model update (not a query-builder mass update) so
+        // BookingObserver fires: enforces the transition is legal and writes
+        // the "Booking status changed" audit log line.
+        $bookings = Booking::where('status', 'pending')
             ->where('created_at', '<', now()->subHour())
-            ->update(['status' => 'expired']);
+            ->get();
 
-        $this->info("Expired {$expiredCount} pending booking(s).");
+        $bookings->each->update(['status' => 'expired']);
+
+        $this->info("Expired {$bookings->count()} pending booking(s).");
 
         return self::SUCCESS;
     }
