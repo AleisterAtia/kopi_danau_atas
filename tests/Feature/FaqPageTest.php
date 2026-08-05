@@ -26,7 +26,13 @@ class FaqPageTest extends TestCase
     {
         $package = TourPackage::factory()->create(['is_active' => true]);
 
-        $response = $this->get(route('packages.show', $package->slug));
+        // Pin the locale: the assertion below checks the Indonesian source
+        // string via __(), which the app's default locale renders as-is,
+        // but CI's .env.example defaults to APP_LOCALE=en (unlike this
+        // project's real .env, which is `id`) and would otherwise translate
+        // it to "Cancellation Policy" and fail the assertion.
+        $response = $this->withSession(['locale' => 'id'])
+            ->get(route('packages.show', $package->slug));
 
         $response->assertOk();
         $response->assertSee('Kebijakan Pembatalan');
