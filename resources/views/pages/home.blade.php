@@ -43,10 +43,13 @@
         </div>
     </div>
 
-    {{-- Signature: editorial facts strip anchored to hero base --}}
+    {{-- Signature: editorial facts strip anchored to hero base.
+         sm+ shows all three side by side; on mobile there isn't room for
+         that without wrapping into clutter, so it rotates one fact at a
+         time instead (also doubles as the page's "changing text" moment). --}}
     <div class="hero-facts anim-fade-up" style="animation-delay:.55s">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <dl class="flex flex-wrap items-center gap-x-10 gap-y-3 py-5">
+            <dl class="hidden sm:flex flex-wrap items-center gap-x-10 gap-y-3 py-5">
                 <div class="hero-fact">
                     <dt>{{ __('Ketinggian') }}</dt>
                     <dd>{{ __('Dataran Tinggi Danau Diatas') }}</dd>
@@ -62,6 +65,37 @@
                     <dd>{{ __('Danau Diatas, Kabupaten Solok') }}</dd>
                 </div>
             </dl>
+
+            <div class="sm:hidden py-5"
+                x-data="{
+                    facts: [
+                        { label: @js(__('Ketinggian')), value: @js(__('Dataran Tinggi Danau Diatas')) },
+                        { label: @js(__('Varietas')), value: @js(__('100% Kopi Arabika')) },
+                        { label: @js(__('Lokasi')), value: @js(__('Danau Diatas, Kabupaten Solok')) },
+                    ],
+                    active: 0,
+                }"
+                x-init="setInterval(() => active = (active + 1) % facts.length, 3000)"
+            >
+                <div class="hero-fact-rotator">
+                    <template x-for="(fact, i) in facts" :key="i">
+                        <div class="hero-fact" x-show="active === i"
+                            x-transition:enter="transition ease-out duration-500"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-300"
+                            x-transition:leave-end="opacity-0">
+                            <dt x-text="fact.label"></dt>
+                            <dd x-text="fact.value"></dd>
+                        </div>
+                    </template>
+                </div>
+                <div class="hero-fact-dots">
+                    <template x-for="(fact, i) in facts" :key="'dot-' + i">
+                        <span class="hero-fact-dot" :class="{ 'is-active': active === i }"></span>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -313,9 +347,47 @@
 
 
 {{-- ═══════════════════════════════════════
+     SECTION 5.5 — FAQ
+     ═══════════════════════════════════════ --}}
+@if($faqs->count() > 0)
+<section id="faq" class="bg-primary py-24 lg:py-28" data-reveal>
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <span class="section-label justify-center mb-5 !text-accent-warm before:!bg-accent-warm">{{ __('Bantuan') }}</span>
+            <h2 class="text-3xl lg:text-4xl font-extrabold text-white tracking-[-0.02em] mt-3">{{ __('Pertanyaan yang Sering Diajukan') }}</h2>
+        </div>
+
+        <div x-data="{ open: 0 }" class="space-y-3">
+            @foreach($faqs as $i => $faq)
+                @php($isPembatalan = str_contains(strtolower($faq->question), 'batal') || str_contains(strtolower($faq->question), 'refund'))
+                <div id="{{ $isPembatalan ? 'pembatalan' : '' }}" class="card">
+                    <button type="button" @click="open = (open === {{ $i }} ? null : {{ $i }})"
+                            class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left">
+                        <span class="font-semibold text-text">{{ $faq->question }}</span>
+                        <svg class="w-5 h-5 flex-shrink-0 text-text-secondary transition-transform"
+                             :class="{ 'rotate-180': open === {{ $i }} }"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open === {{ $i }}" x-cloak
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-1"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="px-5 pb-4 prose-content">
+                        {!! $faq->answer !!}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ═══════════════════════════════════════
      SECTION 6 — Location Map
      ═══════════════════════════════════════ --}}
-<section class="bg-bg-warm py-24 lg:py-28" data-reveal>
+<section class="bg-white py-24 lg:py-28" data-reveal>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-5 gap-10 items-center">
             <div class="lg:col-span-2">

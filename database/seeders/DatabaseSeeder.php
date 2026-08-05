@@ -251,6 +251,9 @@ class DatabaseSeeder extends Seeder
             'sort_order' => 4,
         ]);
 
+        // ── FAQ ──────────────────────────────────────────────
+        $this->call(FaqSeeder::class);
+
         // ── Site Settings ───────────────────────────────────
         SiteSetting::setValue('company_name', 'CV Kopi Danau Diatas');
         SiteSetting::setValue('company_address', 'Alahan Panjang, Kec. Lembah Gumanti, Kab. Solok, Sumatera Barat');

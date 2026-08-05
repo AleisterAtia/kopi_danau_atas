@@ -35,6 +35,7 @@
                     <li><a href="{{ route('about') }}" class="hover:text-white transition-colors">{{ __('Tentang Kami') }}</a></li>
                     <li><a href="{{ route('packages.index') }}" class="hover:text-white transition-colors">{{ __('Paket Wisata') }}</a></li>
                     <li><a href="{{ route('blog.index') }}" class="hover:text-white transition-colors">{{ __('Blog') }}</a></li>
+                    <li><a href="{{ route('home') }}#faq" class="hover:text-white transition-colors">{{ __('FAQ') }}</a></li>
                     @guest
                         <li><a href="{{ route('login') }}" class="hover:text-white transition-colors">{{ __('Masuk') }}</a></li>
                         <li><a href="{{ route('register') }}" class="hover:text-white transition-colors">{{ __('Daftar') }}</a></li>
