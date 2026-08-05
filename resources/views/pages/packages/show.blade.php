@@ -231,7 +231,7 @@
                                 {{ __('Selanjutnya Anda akan diminta melengkapi data pemesan.') }}
                             </p>
                         @else
-                            <a href="{{ route('login') }}" class="w-full btn-primary justify-center text-lg text-center">
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="w-full btn-primary justify-center text-lg text-center">
                                 {{ __('Masuk untuk Memesan') }}
                             </a>
                         @endauth

@@ -8,8 +8,18 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showForm()
+    public function showForm(Request $request)
     {
+        // Lets "Masuk untuk Memesan"-style links (see packages/show.blade.php)
+        // send the user back to the page they came from after login —
+        // including via Google OAuth, which also reads this same session key
+        // through redirect()->intended(). Only relative/same-host redirects
+        // are honored, so a crafted ?redirect= can't send users off-site.
+        $redirect = $request->query('redirect');
+        if ($redirect && parse_url($redirect, PHP_URL_HOST) === null) {
+            $request->session()->put('url.intended', $redirect);
+        }
+
         return view('pages.auth.login');
     }
 
