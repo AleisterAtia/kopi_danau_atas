@@ -5,10 +5,12 @@
 #   queue      — the queue worker (without it, confirmation e-mails never send)
 #   scheduler  — the cron runner (without it, quota never frees & auto-complete dies)
 #   reverb     — websocket server for realtime admin notifications
-#   cloudflared — exposes app+reverb over HTTPS/WSS with no port-forwarding or
-#                 certificate management (optional — remove if you terminate
-#                 TLS some other way, e.g. Caddy/Nginx + a public IP)
 #   db         — MySQL 8
+#
+# app/reverb publish to 127.0.0.1 only (not 0.0.0.0) — a host-level reverse
+# proxy (Nginx + Let's Encrypt, see docs/deployment.md) terminates TLS and
+# forwards to these. Swap for the cloudflared service instead if you'd rather
+# avoid opening 80/443 — see docs/deployment.md for that alternative.
 #
 # Usage:
 #   1. Copy .env.example -> .env, then set:  DB_HOST=db  DB_CONNECTION=mysql
@@ -17,8 +19,7 @@
 #   3. docker compose run --rm app php artisan key:generate
 #   4. docker compose up -d
 #
-# See docs/deployment.md for the full walkthrough (including the Cloudflare
-# Tunnel dashboard setup that TUNNEL_TOKEN below depends on).
+# See docs/deployment.md for the full walkthrough.
 
 # app/queue/scheduler/reverb all build the same image, so the Vite build
 # args (baked into the JS bundle — see Dockerfile) must be identical on all
@@ -39,7 +40,7 @@ services:
     environment:
       RUN_MIGRATIONS: "true"
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -70,19 +71,11 @@ services:
     image: kopi-danau-atas:latest
     env_file: .env
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "127.0.0.1:8080:8080"
     depends_on:
       db:
         condition: service_healthy
-    restart: unless-stopped
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    command: tunnel run
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
-    depends_on:
-      - app
-      - reverb
     restart: unless-stopped
 
   db:

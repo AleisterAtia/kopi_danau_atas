@@ -19,8 +19,15 @@ produksi sebenarnya:
 | `queue` | `php artisan queue:work` | **Tanpa ini email konfirmasi & e-tiket tidak pernah terkirim** (job antri selamanya). |
 | `scheduler` | `php artisan schedule:work` | **Tanpa ini kuota tidak pernah dibebaskan** (booking pending tak kedaluwarsa) & auto-complete mati. |
 | `reverb` | `php artisan reverb:start` | Websocket server untuk notifikasi realtime admin. **Tidak wajib** — WA (Fonnte) & push notification tetap jalan tanpa ini; yang mati cuma toast realtime di panel admin. |
-| `cloudflared` | `cloudflared tunnel run` | Expose `app` & `reverb` ke internet lewat HTTPS/WSS tanpa buka port atau urus sertifikat sendiri. **Wajib untuk push notification** (browser menolak Push API di luar HTTPS/localhost). Opsional kalau pakai reverse proxy lain (Caddy/Nginx). |
 | `db` | MySQL 8 | Basis data. Punya healthcheck agar service lain menunggu DB siap. |
+
+`app` dan `reverb` publish ke `127.0.0.1` saja (bukan `0.0.0.0`) — HTTPS di-terminate
+oleh reverse proxy di **host** (Nginx + Let's Encrypt, lihat 1b), bukan di dalam
+compose. **Wajib untuk push notification** (browser menolak Push API di luar
+HTTPS/localhost). Kalau tidak mau buka port 80/443 sendiri, service `cloudflared`
+(Cloudflare Tunnel) bisa dipakai sebagai gantinya — tapi sejak Cloudflare
+mewajibkan kartu untuk aktivasi Zero Trust (termasuk tier gratis), proyek ini
+default ke Nginx + Let's Encrypt yang tidak butuh akun pihak ketiga sama sekali.
 
 `app`, `queue`, `scheduler`, dan `reverb` memakai **image yang sama**
 (`kopi-danau-atas`) dengan perintah berbeda — persis pola yang dianjurkan
