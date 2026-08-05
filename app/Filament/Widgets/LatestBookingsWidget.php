@@ -54,6 +54,7 @@ class LatestBookingsWidget extends BaseWidget
                     ->dateTime()
                     ->since(),
             ])
-            ->paginated(false);
+            ->paginated(false)
+            ->poll('2s');
     }
 }

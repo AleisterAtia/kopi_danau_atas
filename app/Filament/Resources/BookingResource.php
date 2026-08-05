@@ -147,8 +147,16 @@ class BookingResource extends Resource
                     ->label('Dipesan')
                     ->dateTime('d M Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
+            // Polling re-renders the table every tick, which fights with row
+            // action modals (Confirm/Cancel/Refund use requiresConfirmation())
+            // — Livewire keeps flipping the modal's submit button
+            // disabled/enabled mid-render, making it unclickable. Pausing
+            // polling for as long as any table action is mounted (i.e. its
+            // modal is open) avoids that fight while still auto-refreshing
+            // the rest of the time.
+            ->poll(fn ($livewire) => filled($livewire->mountedTableActions ?? []) ? null : '2s')
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
