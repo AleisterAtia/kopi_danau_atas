@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class GoogleController extends Controller
 {
@@ -15,7 +17,18 @@ class GoogleController extends Controller
      */
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        $response = Socialite::driver('google')->redirect();
+
+        // Socialite stashes the CSRF `state` token in the session but only
+        // writes it to storage when this request terminates (after the
+        // redirect below is already on its way to the browser). With
+        // SESSION_DRIVER=database, an already-authorized Google account can
+        // redirect back to our callback faster than that write lands,
+        // making the state check fail on the very first login attempt.
+        // Forcing the save now closes that race.
+        session()->save();
+
+        return $response;
     }
 
     /**
@@ -75,8 +88,18 @@ class GoogleController extends Controller
             // Redirect to intended page or home
             return redirect()->intended(route('home'));
 
+        } catch (InvalidStateException $e) {
+            Log::warning('Google OAuth state mismatch on callback', ['message' => $e->getMessage()]);
+
+            return redirect()->route('login')->with('error',
+                'Sesi login Google kedaluwarsa. Silakan coba lagi.');
         } catch (Exception $e) {
-            return redirect()->route('login')->with('error', 'Gagal melakukan login dengan Google. Silakan coba lagi. '.$e->getMessage());
+            Log::error('Google login failed', [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('login')->with('error', 'Gagal melakukan login dengan Google. Silakan coba lagi.');
         }
     }
 }
