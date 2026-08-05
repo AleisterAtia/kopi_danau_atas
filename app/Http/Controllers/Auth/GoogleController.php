@@ -30,6 +30,19 @@ class GoogleController extends Controller
             $user = User::where('email', $googleUser->email)->first();
 
             if ($user) {
+                // Refuse to silently bind a Google identity to an existing
+                // account that was never verified by any means. Otherwise an
+                // attacker can pre-register the victim's email with a
+                // password of their own choosing, and the moment the real
+                // owner later signs in with Google, this code would hand
+                // them into the attacker's row — auto-verifying it and
+                // leaving the attacker's password valid on it forever
+                // (account pre-hijacking).
+                if (is_null($user->google_id) && is_null($user->email_verified_at)) {
+                    return redirect()->route('login')->with('error',
+                        'Email ini sudah terdaftar namun belum diverifikasi. Silakan login dengan password dan verifikasi email Anda terlebih dahulu.');
+                }
+
                 // If user exists, just update their google_id and token
                 $user->update([
                     'google_id' => $googleUser->id,

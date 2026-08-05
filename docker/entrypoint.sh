@@ -15,7 +15,7 @@ fi
 # queue/scheduler containers don't race it.
 if [ "$RUN_MIGRATIONS" = "true" ]; then
     php artisan migrate --force
-    php artisan storage:link || true
+    php artisan storage:link || echo "WARNING: storage:link failed — package/blog images will 404 until this is fixed."
 fi
 
 # Cache config for a faster, reproducible runtime (best-effort).
