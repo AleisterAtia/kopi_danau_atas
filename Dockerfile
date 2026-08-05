@@ -40,6 +40,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pdo_mysql mbstring gd zip bcmath intl exif pcntl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Base image defaults (upload_max_filesize=2M) are well below what Filament's
+# image upload fields advertise (up to 50MB) — match that here.
+RUN { \
+        echo 'upload_max_filesize=50M'; \
+        echo 'post_max_size=55M'; \
+    } > /usr/local/etc/php/conf.d/uploads.ini
+
 # Composer from the official image.
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
