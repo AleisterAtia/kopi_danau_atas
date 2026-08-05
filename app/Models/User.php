@@ -51,6 +51,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Review::class);
     }
 
+    public function favoritePackages()
+    {
+        return $this->belongsToMany(TourPackage::class, 'wishlists')->withTimestamps();
+    }
+
     /* ---- Helpers ---- */
 
     public function isAdmin(): bool

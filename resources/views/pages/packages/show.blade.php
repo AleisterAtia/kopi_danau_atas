@@ -24,7 +24,11 @@
                 </li>
             </ol>
         </nav>
-        <h1 class="text-4xl md:text-5xl font-bold text-white font-heading tracking-[-0.02em]">{{ $package->name }}</h1>
+        <div class="flex items-start gap-4">
+            <h1 class="text-4xl md:text-5xl font-bold text-white font-heading tracking-[-0.02em]">{{ $package->name }}</h1>
+            <x-wishlist-heart :package="$package" :wishlisted="$isWishlisted"
+                class="mt-2 w-11 h-11 rounded-full bg-white/10 backdrop-blur-sm text-white/80 hover:text-red-400 flex-shrink-0" />
+        </div>
     </div>
 </div>
 
@@ -108,6 +112,17 @@
                         @endforeach
                     </ul>
                     @endif
+                </div>
+
+                <!-- Cancellation policy -->
+                <div class="bg-white rounded-xl border border-border p-6 md:p-8">
+                    <h2 class="text-xl font-bold font-heading mb-3">{{ __('Kebijakan Pembatalan') }}</h2>
+                    <p class="text-text-secondary leading-relaxed">
+                        {{ __('Pesanan yang belum dibayar dapat dibatalkan sendiri tanpa biaya. Untuk pesanan yang sudah dibayar, pembatalan diproses oleh admin dan dana dikembalikan secara manual setelah dikonfirmasi.') }}
+                    </p>
+                    <a href="{{ route('home') }}#pembatalan" class="inline-block mt-3 text-primary font-semibold hover:underline">
+                        {{ __('Selengkapnya di FAQ') }} &rarr;
+                    </a>
                 </div>
 
                 <!-- Reviews -->
