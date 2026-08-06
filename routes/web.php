@@ -15,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ Route::get('/paket-wisata', [TourPackageController::class, 'index'])->name('pack
 Route::get('/paket-wisata/{slug}', [TourPackageController::class, 'show'])->name('packages.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/lang/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
 /*
