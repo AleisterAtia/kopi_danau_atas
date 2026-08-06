@@ -309,20 +309,30 @@
 
     {{-- ══ GALERI ══ --}}
     @if($gallery->isNotEmpty())
-    <section class="ab-gal" x-data="{ open:false, src:'', alt:'' }">
+    @php $galleryPages = $gallery->chunk(8)->values(); @endphp
+    <section class="ab-gal" x-data="{ open:false, src:'', alt:'', page:0 }"
+             @if($galleryPages->count() > 1) x-init="setInterval(() => page = (page + 1) % {{ $galleryPages->count() }}, 5000)" @endif>
         <div class="ab-wrap">
             <div data-reveal>
                 <span class="ab-eye">{{ __('Galeri') }}</span>
                 <h2 class="ab-h2">{{ __('Kebun & Kegiatan Kami') }}</h2>
             </div>
-            <div class="ab-gal__grid" data-reveal>
-                @foreach($gallery as $img)
-                    @php $url = Storage::url($img->image_path); @endphp
-                    <button type="button" class="ab-gal__i"
-                            @click="src='{{ $url }}'; alt='{{ addslashes($img->caption ?? '') }}'; open=true"
-                            aria-label="{{ __('Perbesar gambar') }}">
-                        <img src="{{ $url }}" alt="{{ $img->caption ?? __('Galeri') }}" loading="lazy" decoding="async">
-                    </button>
+            <div data-reveal>
+                @foreach($galleryPages as $i => $chunk)
+                    <div class="ab-gal__grid" x-show="page === {{ $i }}"
+                         @if($i > 0) x-cloak @endif
+                         x-transition:enter="transition ease-out duration-500"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100">
+                        @foreach($chunk as $img)
+                            @php $url = Storage::url($img->image_path); @endphp
+                            <button type="button" class="ab-gal__i"
+                                    @click="src='{{ $url }}'; alt='{{ addslashes($img->caption ?? '') }}'; open=true"
+                                    aria-label="{{ __('Perbesar gambar') }}">
+                                <img src="{{ $url }}" alt="{{ $img->caption ?? __('Galeri') }}" loading="lazy" decoding="async">
+                            </button>
+                        @endforeach
+                    </div>
                 @endforeach
             </div>
         </div>

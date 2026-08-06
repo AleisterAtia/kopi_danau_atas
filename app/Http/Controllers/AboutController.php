@@ -21,8 +21,10 @@ class AboutController extends Controller
             ->get();
 
         // Existing homepage gallery doubles as the About page gallery so admins
-        // manage one image pool, not two.
-        $gallery = HomepageImage::orderBy('sort_order')->take(8)->get();
+        // manage one image pool, not two. Capped so an admin uploading hundreds
+        // of photos doesn't balloon page weight; the view rotates through this
+        // set 8 at a time instead of showing everything at once.
+        $gallery = HomepageImage::orderBy('sort_order')->take(40)->get();
 
         $map = SiteSetting::map();
         $settings = [
