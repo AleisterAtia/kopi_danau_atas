@@ -103,7 +103,11 @@
 
 /* ── Galeri ── */
 .ab-gal{padding:5rem 0;background:#fff;}
-.ab-gal__grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem;margin-top:2.25rem;}
+/* Stage stacks every rotating page in the same grid cell so the incoming and
+   outgoing page overlap and crossfade instead of the layout collapsing to
+   zero height between them (which read as a jarring "reload"). */
+.ab-gal__stage{display:grid;margin-top:2.25rem;}
+.ab-gal__grid{grid-area:1/1;display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem;}
 @media(min-width:768px){.ab-gal__grid{grid-template-columns:repeat(4,1fr);}}
 .ab-gal__i{position:relative;overflow:hidden;border-radius:.8rem;cursor:zoom-in;background:var(--g0);border:0;padding:0;aspect-ratio:1;}
 .ab-gal__i img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;}
@@ -317,13 +321,16 @@
                 <span class="ab-eye">{{ __('Galeri') }}</span>
                 <h2 class="ab-h2">{{ __('Kebun & Kegiatan Kami') }}</h2>
             </div>
-            <div data-reveal>
+            <div class="ab-gal__stage" data-reveal>
                 @foreach($galleryPages as $i => $chunk)
                     <div class="ab-gal__grid" x-show="page === {{ $i }}"
                          @if($i > 0) x-cloak @endif
-                         x-transition:enter="transition ease-out duration-500"
+                         x-transition:enter="transition ease-out duration-700"
                          x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100">
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-700"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0">
                         @foreach($chunk as $img)
                             @php $url = Storage::url($img->image_path); @endphp
                             <button type="button" class="ab-gal__i"
