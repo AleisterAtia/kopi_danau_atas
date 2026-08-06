@@ -81,6 +81,7 @@ class HomepageSectionResource extends Resource
                         ->columns(3)
                         ->defaultItems(0)
                         ->reorderable()
+                        ->orderColumn('sort_order')
                         ->collapsible(),
                 ]),
         ]);
