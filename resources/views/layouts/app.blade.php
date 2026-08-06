@@ -8,6 +8,9 @@
     <title>@yield('title', __('Beranda')) | {{ \App\Models\SiteSetting::getValue('company_name', 'CV Kopi Danau Diatas') }}</title>
     <meta name="description" content="@yield('meta_description', __('Agrowisata kopi edukatif di Danau Diatas, Kabupaten Solok — petik kopi, roasting, dan cupping langsung di kebun Arabika Danau Diatas.'))">
 
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
