@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoffeeVariety;
+use App\Models\CompanyValue;
 use App\Models\HomepageImage;
 use App\Models\HomepageSection;
 use App\Models\SiteSetting;
@@ -50,6 +51,8 @@ class AboutController extends Controller
                 __('Merawat tanah, air, dan hutan dataran tinggi sebagai warisan bersama.'),
             ];
 
-        return view('pages.about', compact('about', 'varieties', 'gallery', 'settings', 'altitude', 'vision', 'mission'));
+        $values = CompanyValue::orderBy('sort_order')->get();
+
+        return view('pages.about', compact('about', 'varieties', 'gallery', 'settings', 'altitude', 'vision', 'mission', 'values'));
     }
 }

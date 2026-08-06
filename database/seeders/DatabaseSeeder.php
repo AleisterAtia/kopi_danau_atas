@@ -254,6 +254,9 @@ class DatabaseSeeder extends Seeder
         // ── FAQ ──────────────────────────────────────────────
         $this->call(FaqSeeder::class);
 
+        // ── Company Values (About page) ─────────────────────
+        $this->call(CompanyValueSeeder::class);
+
         // ── Site Settings ───────────────────────────────────
         SiteSetting::setValue('company_name', 'CV Kopi Danau Diatas');
         SiteSetting::setValue('company_address', 'Alahan Panjang, Kec. Lembah Gumanti, Kab. Solok, Sumatera Barat');
