@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('Kopi Danau Diatas')
+            ->favicon(asset('images/logo.png'))
             ->colors([
                 'primary' => Color::Green,
                 'danger' => Color::Red,
