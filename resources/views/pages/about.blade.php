@@ -183,7 +183,7 @@
 
                     <div class="ab-facts">
                         <div class="ab-fact">
-                            <span><span class="ab-fact__n">1.400</span><span class="ab-fact__u">mdpl</span></span>
+                            <span><span class="ab-fact__n">{{ $altitude }}</span><span class="ab-fact__u">mdpl</span></span>
                             <span class="ab-fact__l">{{ __('Ketinggian Kebun') }}</span>
                         </div>
                         <div class="ab-fact">
@@ -211,7 +211,7 @@
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         {{ __('Visi') }}
                     </h3>
-                    <p>{{ __('Menjadi rujukan agrowisata kopi Arabika Sumatera Barat — tempat cita rasa kopi Solok, kesejahteraan petani, dan kelestarian dataran tinggi tumbuh beriringan.') }}</p>
+                    <p>{{ $vision }}</p>
                 </div>
                 <div class="ab-panelcard" data-reveal>
                     <h3>
@@ -219,12 +219,7 @@
                         {{ __('Misi') }}
                     </h3>
                     <ul class="ab-misi">
-                        @foreach([
-                            __('Menghadirkan wisata edukasi kopi yang jujur, dari petik ceri merah hingga seruput terakhir.'),
-                            __('Membudidayakan Arabika unggulan secara berkelanjutan di ketinggian Danau Diatas.'),
-                            __('Memberdayakan petani kopi lokal lewat kemitraan yang adil.'),
-                            __('Merawat tanah, air, dan hutan dataran tinggi sebagai warisan bersama.'),
-                        ] as $misi)
+                        @foreach($mission as $misi)
                             <li>
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $misi }}</span>

@@ -36,6 +36,20 @@ class AboutController extends Controller
             'tiktok_url' => $map['tiktok_url'] ?? null,
         ];
 
-        return view('pages.about', compact('about', 'varieties', 'gallery', 'settings'));
+        // Editable via Filament > Site Settings (keys: about_altitude_mdpl,
+        // about_vision, about_mission — mission is one line per item).
+        // Fall back to the original copy when admin hasn't set them.
+        $altitude = $map['about_altitude_mdpl'] ?? '1.400';
+        $vision = $map['about_vision'] ?? __('Menjadi rujukan agrowisata kopi Arabika Sumatera Barat — tempat cita rasa kopi Solok, kesejahteraan petani, dan kelestarian dataran tinggi tumbuh beriringan.');
+        $mission = ! empty(trim($map['about_mission'] ?? ''))
+            ? preg_split('/\r?\n/', trim($map['about_mission']))
+            : [
+                __('Menghadirkan wisata edukasi kopi yang jujur, dari petik ceri merah hingga seruput terakhir.'),
+                __('Membudidayakan Arabika unggulan secara berkelanjutan di ketinggian Danau Diatas.'),
+                __('Memberdayakan petani kopi lokal lewat kemitraan yang adil.'),
+                __('Merawat tanah, air, dan hutan dataran tinggi sebagai warisan bersama.'),
+            ];
+
+        return view('pages.about', compact('about', 'varieties', 'gallery', 'settings', 'altitude', 'vision', 'mission'));
     }
 }
