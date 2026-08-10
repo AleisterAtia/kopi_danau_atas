@@ -40,7 +40,89 @@
                 </button>
                 @endif
             </div>
+
+            {{-- Mobile-only quick glimpse — avatar stack under the CTAs.
+                 The floating spotlight card below needs room the photo
+                 doesn't have on a phone, so mobile keeps this compact
+                 alternative instead of losing the package glimpse entirely. --}}
+            @if($featuredPackages->count() > 0)
+            <div class="flex lg:hidden items-center gap-4 mt-8 anim-fade-up" style="animation-delay:.5s">
+                <div class="flex -space-x-3">
+                    @foreach($featuredPackages->take(4) as $package)
+                    <a href="{{ route('packages.show', $package->slug) }}" class="relative w-11 h-11 rounded-full ring-2 ring-white/60 overflow-hidden shrink-0" title="{{ $package->name }}">
+                        @if($package->images->first())
+                            <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
+                        @else
+                            <div class="w-full h-full bg-primary-700"></div>
+                        @endif
+                    </a>
+                    @endforeach
+                </div>
+                <a href="{{ route('packages.index') }}" class="text-sm text-white/85">
+                    <span class="font-semibold text-white">{{ $featuredPackages->count() }}+</span> {{ __('paket wisata siap dijelajahi') }}
+                </a>
+            </div>
+            @endif
         </div>
+
+        {{-- Floating package spotlight — glass card parked on the open
+             right side of the photo (the text column already claims the
+             left/darkened side). Only ~320px wide and glassy, so most of
+             the lake/mountain stays visible; auto-rotates through
+             featured packages using the same rotator pattern as the
+             mobile hero-facts strip below. Desktop only — no room on
+             mobile without covering the shot entirely. --}}
+        @if($featuredPackages->count() > 0)
+        <div class="hidden lg:block absolute right-0 xl:right-8 top-1/2 -translate-y-1/2 w-[300px] anim-fade-up" style="animation-delay:.5s"
+            x-data="{
+                items: @js($featuredPackages->take(4)->map(fn ($p) => [
+                    'name' => $p->name,
+                    'price' => 'Rp ' . number_format($p->price, 0, ',', '.'),
+                    'image' => optional($p->images->first())->image_path ? Storage::url($p->images->first()->image_path) : null,
+                    'url' => route('packages.show', $p->slug),
+                ])),
+                active: 0,
+            }"
+            x-init="items.length > 1 && setInterval(() => active = (active + 1) % items.length, 4000)"
+        >
+            <div class="bg-white/10 backdrop-blur-md border border-white/25 rounded-2xl shadow-2xl p-4">
+                <p class="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-white/70 mb-3">{{ __('Paket Pilihan') }}</p>
+
+                <div class="relative aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-primary-800">
+                    <template x-for="(item, i) in items" :key="i">
+                        <a :href="item.url" x-show="active === i"
+                            x-transition:enter="transition ease-out duration-500"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
+                            x-transition:leave="transition ease-in duration-300"
+                            x-transition:leave-end="opacity-0"
+                            class="absolute inset-0 group">
+                            <img :src="item.image" :alt="item.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </a>
+                    </template>
+                </div>
+
+                <template x-for="(item, i) in items" :key="'label-' + i">
+                    <a :href="item.url" x-show="active === i" class="block group">
+                        <p class="text-white font-bold text-base leading-tight mb-1" x-text="item.name"></p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/80 text-sm" x-text="item.price"></span>
+                            <span class="text-white text-sm font-semibold inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                {{ __('Lihat') }}
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </span>
+                        </div>
+                    </a>
+                </template>
+
+                <div class="flex gap-1.5 mt-4" x-show="items.length > 1">
+                    <template x-for="(item, i) in items" :key="'dot-' + i">
+                        <button type="button" @click="active = i" class="h-1.5 rounded-full transition-all duration-300" :class="active === i ? 'w-6 bg-white' : 'w-1.5 bg-white/40'"></button>
+                    </template>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Signature: editorial facts strip anchored to hero base.
@@ -177,21 +259,27 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($featuredPackages as $package)
-            <a href="{{ route('packages.show', $package->slug) }}" class="card group flex flex-col h-full">
-                {{-- Image --}}
-                <div class="relative h-52 overflow-hidden">
-                    @if($package->images->first())
-                        <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" loading="lazy" decoding="async">
-                    @else
-                        <div class="w-full h-full bg-primary-50 flex items-center justify-center">
-                            <svg class="w-10 h-10 text-primary/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        </div>
-                    @endif
-                </div>
+            <a href="{{ route('packages.show', $package->slug) }}" class="group relative flex flex-col aspect-[4/3] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-500">
+                {{-- Image (full-bleed) --}}
+                @if($package->images->first())
+                    <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" loading="lazy" decoding="async">
+                @else
+                    <div class="absolute inset-0 bg-primary-50 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-primary/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                @endif
 
-                {{-- Body --}}
-                <div class="p-6 flex flex-col flex-grow">
-                    <div class="flex items-center gap-4 text-xs text-text-muted mb-3">
+                {{-- Gradient scrim --}}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent"></div>
+
+                {{-- Price badge --}}
+                <span class="absolute top-4 right-4 rounded-full bg-white/90 backdrop-blur px-3 py-1 text-xs font-bold text-primary shadow-sm">
+                    Rp {{ number_format($package->price, 0, ',', '.') }}
+                </span>
+
+                {{-- Caption --}}
+                <div class="relative mt-auto p-6 text-white">
+                    <div class="flex items-center gap-4 text-xs text-white/80 mb-2">
                         <span class="flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             {{ $package->duration_hours }} {{ __('jam') }}
@@ -202,19 +290,12 @@
                         </span>
                     </div>
 
-                    <h3 class="text-lg font-bold text-text mb-1.5 group-hover:text-primary transition-colors">{{ $package->name }}</h3>
-                    <p class="text-sm text-text-secondary line-clamp-2 mb-5 flex-grow">{!! strip_tags($package->description) !!}</p>
+                    <h3 class="text-lg font-bold mb-1.5 leading-tight">{{ $package->name }}</h3>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-border">
-                        <div>
-                            <span class="block text-[0.7rem] text-text-muted">{{ __('Mulai dari') }}</span>
-                            <span class="text-lg font-bold text-primary">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
-                        </div>
-                        <span class="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                            {{ __('Detail') }}
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </span>
-                    </div>
+                    <span class="text-sm font-semibold text-white/90 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                        {{ __('Lihat Detail') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </span>
                 </div>
             </a>
             @endforeach
