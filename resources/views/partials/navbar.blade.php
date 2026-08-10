@@ -14,6 +14,7 @@
                 <a href="{{ route('about') }}" class="nav-link">{{ __('Tentang Kami') }}</a>
                 <a href="{{ route('packages.index') }}" class="nav-link">{{ __('Paket Wisata') }}</a>
                 <a href="{{ route('blog.index') }}" class="nav-link">{{ __('Blog') }}</a>
+                <a href="{{ route('home') }}#faq" class="nav-link">{{ __('FAQ') }}</a>
 
                 {{-- Language toggle --}}
                 <div class="relative" x-data="{ open: false }">
@@ -91,6 +92,7 @@
             <a href="{{ route('about') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('Tentang Kami') }}</a>
             <a href="{{ route('packages.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('Paket Wisata') }}</a>
             <a href="{{ route('blog.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('Blog') }}</a>
+            <a href="{{ route('home') }}#faq" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('FAQ') }}</a>
 
             <div class="border-t border-gray-100 my-2 pt-2">
                 <div class="flex gap-3 px-3 py-2">
