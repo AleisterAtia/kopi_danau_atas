@@ -14,6 +14,7 @@
                 <a href="{{ route('about') }}" class="nav-link">{{ __('Tentang Kami') }}</a>
                 <a href="{{ route('packages.index') }}" class="nav-link">{{ __('Paket Wisata') }}</a>
                 <a href="{{ route('blog.index') }}" class="nav-link">{{ __('Blog') }}</a>
+                <a href="{{ route('home') }}#faq" class="nav-link">{{ __('FAQ') }}</a>
 
                 {{-- Language toggle --}}
                 <div class="relative" x-data="{ open: false }">
@@ -91,6 +92,7 @@
             <a href="{{ route('about') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('Tentang Kami') }}</a>
             <a href="{{ route('packages.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('Paket Wisata') }}</a>
             <a href="{{ route('blog.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('Blog') }}</a>
+            <a href="{{ route('home') }}#faq" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">{{ __('FAQ') }}</a>
 
             <div class="border-t border-gray-100 my-2 pt-2">
                 <div class="flex gap-3 px-3 py-2">
@@ -100,12 +102,26 @@
             </div>
 
             @auth
-                <div class="border-t border-gray-100 my-2 pt-2">
-                    <a href="{{ route('booking.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Pesanan Saya') }}</a>
-                    <a href="{{ route('profile.edit') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Profil') }}</a>
-                    <form method="POST" action="{{ route('logout') }}">@csrf
-                        <button type="submit" class="block w-full text-left px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50">{{ __('Keluar') }}</button>
-                    </form>
+                <div class="border-t border-gray-100 my-2 pt-2" x-data="{ accountOpen: false }">
+                    <button type="button" @click="accountOpen = !accountOpen" class="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">
+                        <span class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </span>
+                            {{ auth()->user()->name }}
+                        </span>
+                        <svg class="w-4 h-4 opacity-50 transition-transform duration-200" :class="accountOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="accountOpen" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-end="opacity-0">
+                        @if(auth()->user()->isAdmin())
+                            <a href="/admin" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Admin Panel') }}</a>
+                        @endif
+                        <a href="{{ route('booking.index') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Pesanan Saya') }}</a>
+                        <a href="{{ route('profile.edit') }}" class="block px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50">{{ __('Profil') }}</a>
+                        <form method="POST" action="{{ route('logout') }}">@csrf
+                            <button type="submit" class="block w-full text-left px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50">{{ __('Keluar') }}</button>
+                        </form>
+                    </div>
                 </div>
             @else
                 <div class="border-t border-gray-100 my-2 pt-3 flex gap-3 px-3">
