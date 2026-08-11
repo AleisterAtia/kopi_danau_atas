@@ -169,24 +169,7 @@
                         </div>
                     </div>
 
-                    @if ($errors->any())
-                        <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
-                            <ul class="list-disc list-inside text-sm text-red-600">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    @if(session('success'))
-                        <div class="mb-4 bg-green-50 border-l-4 border-green-500 p-4">
-                            <p class="text-sm text-green-700">{{ session('success') }}</p>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('booking.create') }}" method="POST">
-                        @csrf
+                    <form action="{{ route('booking.create') }}" method="GET">
                         <input type="hidden" name="tour_package_id" value="{{ $package->id }}">
 
                         <div class="space-y-4 mb-6">

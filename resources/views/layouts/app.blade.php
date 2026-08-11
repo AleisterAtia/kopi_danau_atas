@@ -25,6 +25,7 @@
 </head>
 <body class="antialiased flex flex-col min-h-screen">
     @include('partials.navbar')
+    @include('partials.toast')
 
     <main class="flex-grow">
         @yield('content')

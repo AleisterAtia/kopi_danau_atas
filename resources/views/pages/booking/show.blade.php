@@ -30,22 +30,6 @@
 
 <div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        @if(session('success'))
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-md">
-                <p class="text-green-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
-                <ul class="list-disc list-inside text-sm text-red-700">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         {{-- E-Ticket QR Code (paid/confirmed/completed) --}}
         @if(in_array($booking->status, ['paid', 'confirmed', 'completed']) && $booking->qr_code_path)
         <div class="bg-white rounded-xl border border-border overflow-hidden">
@@ -240,16 +224,6 @@
                             </p>
                         </div>
                     @else
-                        @if ($errors->any())
-                            <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
-                                <ul class="list-disc list-inside text-sm text-red-600">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-
                         <form action="{{ route('review.store', $booking) }}" method="POST" class="space-y-6" x-data="{ rating: 5, hover: 0 }">
                             @csrf
                             <div>

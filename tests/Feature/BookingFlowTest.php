@@ -22,11 +22,11 @@ class BookingFlowTest extends TestCase
         $package = TourPackage::factory()->create();
         $user = User::factory()->unverified()->create();
 
-        $response = $this->actingAs($user)->post('/booking/create', [
+        $response = $this->actingAs($user)->get('/booking/create?'.http_build_query([
             'tour_package_id' => $package->id,
             'visit_date' => now()->addDays(3)->toDateString(),
             'guest_count' => 1,
-        ]);
+        ]));
 
         $response->assertRedirect(route('verification.notice'));
     }
@@ -43,11 +43,11 @@ class BookingFlowTest extends TestCase
             'guest_count' => 1,
         ]);
 
-        $response = $this->actingAs($user)->post('/booking/create', [
+        $response = $this->actingAs($user)->get('/booking/create?'.http_build_query([
             'tour_package_id' => $package->id,
             'visit_date' => $visitDate,
             'guest_count' => 1,
-        ]);
+        ]));
 
         $response->assertRedirect(route('packages.show', $package->slug));
         $response->assertSessionHasErrors('guest_count');

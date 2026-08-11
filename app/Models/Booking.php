@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,6 +35,23 @@ class Booking extends Model
      * How many times to retry generating a booking code on duplicate.
      */
     private const CODE_GENERATION_MAX_ATTEMPTS = 3;
+
+    /**
+     * Bookings that occupy quota: paid/confirmed/completed, plus pending
+     * bookings created in the last hour (matches bookings:expire-pending's
+     * cutoff, so mid-checkout users aren't double-booked while stale
+     * pending rows are excluded). Single source of truth for this rule —
+     * reused by TourPackage::getAvailableQuota/getBookedCount and by the
+     * homepage/listing controllers' aggregate queries.
+     */
+    public function scopeOccupyingQuota(Builder $query): void
+    {
+        $query->whereIn('status', ['paid', 'confirmed', 'completed'])
+            ->orWhere(function ($q) {
+                $q->where('status', 'pending')
+                    ->where('created_at', '>=', now()->subHour());
+            });
+    }
 
     protected $fillable = [
         'booking_code',

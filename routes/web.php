@@ -100,7 +100,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Booking
     Route::get('/booking', [BookingController::class, 'myBookings'])->name('booking.index');
-    Route::post('/booking/create', [BookingController::class, 'create'])->name('booking.create');
+    Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/{booking}', [BookingController::class, 'show'])->name('booking.show');
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');

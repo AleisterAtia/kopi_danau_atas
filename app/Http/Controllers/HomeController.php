@@ -22,23 +22,14 @@ class HomeController extends Controller
         $testimonials = HomepageSection::findByKey('testimonials');
 
         // Featured packages — eager-load images, precompute today's
-        // booked count + average rating so the section card can show
+        // booked guest count + average rating so the section card can show
         // remaining slots and rating without extra queries.
         $featuredPackages = TourPackage::where('is_active', true)
             ->where('is_featured', true)
             ->with('images')
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
-            ->withCount(['bookings as today_booked' => function ($q) {
-                $q->whereDate('visit_date', today())
-                    ->where(function ($inner) {
-                        $inner->whereIn('status', ['paid', 'confirmed', 'completed'])
-                            ->orWhere(function ($p) {
-                                $p->where('status', 'pending')
-                                    ->where('created_at', '>=', now()->subHour());
-                            });
-                    });
-            }])
+            ->withSum(['bookings as today_booked_guests' => fn ($q) => $q->whereDate('visit_date', today())->occupyingQuota()], 'guest_count')
             ->take(4)
             ->get();
 

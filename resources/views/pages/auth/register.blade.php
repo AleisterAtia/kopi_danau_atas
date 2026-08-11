@@ -27,16 +27,6 @@
             </p>
         </div>
 
-        @if ($errors->any())
-            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-md">
-                <ul class="list-disc list-inside text-sm text-red-700">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <form class="mt-8 space-y-6" action="{{ route('register') }}" method="POST">
             @csrf
             <div class="space-y-4">
