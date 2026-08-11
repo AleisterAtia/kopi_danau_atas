@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -17,7 +18,11 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        $emailChanging = $request->email !== $user->email;
+        // Compare loosely (trim + case-insensitive) so re-submitting the same
+        // address with incidental whitespace/case differences — e.g. from a
+        // browser autofill quirk — never gets misread as an intentional
+        // email change and demands a current_password that wasn't needed.
+        $emailChanging = strtolower(trim($request->email)) !== strtolower(trim($user->email));
         $passwordChanging = $request->filled('password');
 
         // Accounts created through Google have no password at all
@@ -68,5 +73,29 @@ class ProfileController extends Controller
         }
 
         return back()->with('success', __('Profil berhasil diperbarui.'));
+    }
+
+    /**
+     * A photo is cosmetic, not a security-sensitive change, so this is a
+     * separate form/route from update() — kept off the name/email/password
+     * form specifically so a browser autofilling one of those password
+     * fields (a real risk on multi-password-field forms) can never trip
+     * the current_password gate on someone who only meant to swap a photo.
+     */
+    public function updateAvatar(Request $request)
+    {
+        $request->validate(['avatar' => 'required|image|max:2048']);
+
+        $user = auth()->user();
+
+        // Only delete the old file if it's one we stored ourselves — a
+        // Google-login avatar is an external URL, not a local path.
+        if ($user->avatar && ! str_starts_with($user->avatar, 'http')) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->update(['avatar' => $request->file('avatar')->store('avatars', 'public')]);
+
+        return back()->with('success', __('Foto profil berhasil diperbarui.'));
     }
 }

@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -163,5 +165,74 @@ class ProfileUpdateTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertTrue(Hash::check('sandi-pertama', $user->fresh()->password));
+    }
+
+    public function test_uploading_an_avatar_stores_it_and_updates_the_user(): void
+    {
+        Storage::fake('public');
+        $user = $this->verifiedUser();
+
+        $this->actingAs($user)
+            ->post('/profil/foto', ['avatar' => UploadedFile::fake()->image('foto.jpg')])
+            ->assertSessionHasNoErrors();
+
+        $user->refresh();
+        $this->assertNotNull($user->avatar);
+        Storage::disk('public')->assertExists($user->avatar);
+    }
+
+    public function test_uploading_a_new_avatar_deletes_the_previous_local_file(): void
+    {
+        Storage::fake('public');
+        $oldPath = UploadedFile::fake()->image('lama.jpg')->store('avatars', 'public');
+        $user = $this->verifiedUser(['avatar' => $oldPath]);
+
+        $this->actingAs($user)
+            ->post('/profil/foto', ['avatar' => UploadedFile::fake()->image('baru.jpg')])
+            ->assertSessionHasNoErrors();
+
+        Storage::disk('public')->assertMissing($oldPath);
+        Storage::disk('public')->assertExists($user->fresh()->avatar);
+    }
+
+    /**
+     * A Google-login avatar is an external URL (GoogleController), not a
+     * local storage path — deleting it would be a no-op at best, but the
+     * str_starts_with('http') guard exists specifically so Storage::delete
+     * is never called with a URL as the "path".
+     */
+    public function test_uploading_an_avatar_over_a_google_url_does_not_touch_storage(): void
+    {
+        Storage::fake('public');
+        $user = $this->verifiedUser([
+            'avatar' => 'https://lh3.googleusercontent.com/a/old-photo',
+            'google_id' => '1234567890',
+        ]);
+
+        $this->actingAs($user)
+            ->post('/profil/foto', ['avatar' => UploadedFile::fake()->image('baru.jpg')])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue(str_starts_with($user->fresh()->avatar, 'avatars/'));
+    }
+
+    /**
+     * Regression: a user WITH a password set (dual-auth: registered by
+     * email then also linked Google, or any password-holding account)
+     * must still be able to swap their photo without ever being asked to
+     * confirm a password — avatar changes live on their own route/form
+     * specifically so they can never trip the current_password gate that
+     * guards the name/email/password form.
+     */
+    public function test_uploading_an_avatar_never_requires_current_password(): void
+    {
+        Storage::fake('public');
+        $user = $this->verifiedUser(['google_id' => '1234567890']);
+
+        $this->actingAs($user)
+            ->post('/profil/foto', ['avatar' => UploadedFile::fake()->image('foto.jpg')])
+            ->assertSessionHasNoErrors();
+
+        $this->assertNotNull($user->fresh()->avatar);
     }
 }
