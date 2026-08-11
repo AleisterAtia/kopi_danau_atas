@@ -102,18 +102,7 @@ class TourPackage extends Model
      */
     public function getAvailableQuota(string $date): int
     {
-        $bookedCount = $this->bookings()
-            ->whereDate('visit_date', $date)
-            ->where(function ($query) {
-                $query->whereIn('status', ['paid', 'confirmed', 'completed'])
-                    ->orWhere(function ($q) {
-                        $q->where('status', 'pending')
-                            ->where('created_at', '>=', now()->subHour());
-                    });
-            })
-            ->sum('guest_count');
-
-        return max(0, $this->daily_capacity - (int) $bookedCount);
+        return max(0, $this->daily_capacity - $this->getBookedCount($date));
     }
 
     /**
@@ -123,13 +112,7 @@ class TourPackage extends Model
     {
         return (int) $this->bookings()
             ->whereDate('visit_date', $date)
-            ->where(function ($query) {
-                $query->whereIn('status', ['paid', 'confirmed', 'completed'])
-                    ->orWhere(function ($q) {
-                        $q->where('status', 'pending')
-                            ->where('created_at', '>=', now()->subHour());
-                    });
-            })
+            ->occupyingQuota()
             ->sum('guest_count');
     }
 

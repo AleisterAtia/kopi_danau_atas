@@ -18,13 +18,15 @@ class TourPackageController extends Controller
         $priceMax = $request->query('price_max');
         $sort = $request->query('sort', 'latest');
 
-        // Eager-load images (avoid N+1 in card thumbnails) and pre-compute
-        // the reviews avg rating so the `average_rating` accessor doesn't
-        // run an aggregate query per package.
+        // Eager-load images (avoid N+1 in card thumbnails), pre-compute the
+        // reviews avg rating so the `average_rating` accessor doesn't run an
+        // aggregate query per package, and precompute today's booked guest
+        // count so cards can show remaining slots without extra queries.
         $query = TourPackage::where('is_active', true)
             ->with(['images', 'category'])
             ->withCount('reviews')
-            ->withAvg('reviews', 'rating');
+            ->withAvg('reviews', 'rating')
+            ->withSum(['bookings as today_booked_guests' => fn ($q) => $q->whereDate('visit_date', today())->occupyingQuota()], 'guest_count');
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {

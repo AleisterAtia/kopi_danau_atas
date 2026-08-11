@@ -103,44 +103,7 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 @foreach($packages as $package)
-                <div class="card flex flex-col h-full">
-                    <div class="relative h-56 overflow-hidden group">
-                        @if($package->images->first())
-                            <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async">
-                        @else
-                            <div class="w-full h-full bg-primary-50 flex items-center justify-center">
-                                <span class="text-text-muted text-sm">{{ __('Tanpa Gambar') }}</span>
-                            </div>
-                        @endif
-                        <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-primary">
-                            Rp {{ number_format($package->price, 0, ',', '.') }}
-                        </div>
-                    </div>
-                    
-                    <div class="p-6 flex flex-col flex-grow">
-                        <div class="flex items-center text-sm text-text-secondary mb-3 space-x-4">
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> {{ $package->duration_hours }} {{ __('Jam') }}</span>
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> {{ __('Maks.') }} {{ $package->daily_capacity }} {{ __('pax') }}</span>
-                        </div>
-                        
-                        <h3 class="text-xl font-bold text-text mb-2 font-heading">{{ $package->name }}</h3>
-                        
-                        <div class="text-text-secondary text-sm mb-6 flex-grow line-clamp-3">
-                            {!! strip_tags($package->description) !!}
-                        </div>
-                        
-                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-border">
-                            <div class="flex items-center">
-                                <span class="text-warning text-sm mr-1">★</span>
-                                <span class="text-sm font-bold">{{ $package->average_rating > 0 ? $package->average_rating : '-' }}</span>
-                                <span class="text-xs text-gray-500 ml-1">({{ $package->reviews_count ?? 0 }} {{ __('ulasan') }})</span>
-                            </div>
-                            <a href="{{ route('packages.show', $package->slug) }}" class="btn-primary text-sm px-4 py-1.5">
-                                {{ __('Detail') }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                    <x-package-card :package="$package" />
                 @endforeach
             </div>
 
