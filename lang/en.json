@@ -1,7 +1,6 @@
 {
     "Halaman Tidak Ditemukan": "Page Not Found",
     "Halaman yang Anda cari mungkin sudah dipindahkan atau tidak pernah ada. Yuk kembali jelajahi paket wisata kami.": "The page you're looking for may have been moved or never existed. Let's get you back to exploring our tour packages.",
-    "Lihat Paket Wisata": "View Tour Packages",
     "Akses Ditolak": "Access Denied",
     "Anda tidak memiliki izin untuk mengakses halaman ini, atau tautan yang Anda buka sudah tidak berlaku.": "You don't have permission to access this page, or the link you opened is no longer valid.",
     "Masuk ke Akun": "Log In",
@@ -166,6 +165,7 @@
     "Belum ada pesanan": "No orders yet",
     "Anda belum membuat pesanan paket wisata apapun.": "You have not made any tour package orders yet.",
     "Lihat Paket Wisata": "View Tour Packages",
+    "Lihat": "View",
     "Kode & Paket": "Code & Package",
     "Tgl Kunjungan": "Visit Date",
     "Status": "Status",
