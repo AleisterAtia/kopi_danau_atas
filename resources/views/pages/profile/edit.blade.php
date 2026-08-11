@@ -12,21 +12,6 @@
 <div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-md">
-                <p class="text-green-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
-                <ul class="list-disc list-inside text-sm text-red-700">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
         <div class="bg-white rounded-xl border border-border overflow-hidden">
             <div class="p-6 md:p-8">

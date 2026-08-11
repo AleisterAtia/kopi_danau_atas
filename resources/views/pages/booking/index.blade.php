@@ -11,12 +11,6 @@
 
 <div class="py-16 lg:py-20 bg-bg-warm min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-md">
-                <p class="text-green-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
         <div class="bg-white rounded-xl border border-border overflow-hidden">
             @if($bookings->isEmpty())
                 <div class="text-center py-16">
