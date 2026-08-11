@@ -1,10 +1,15 @@
 @php
+    // `$errors` is normally shared by the web middleware group's
+    // ShareErrorsFromSession, but views rendered on the exception path
+    // (custom error pages for a 404/419 that short-circuits before that
+    // middleware runs) don't have it — fall back to an empty bag.
+    $errorBag = $errors ?? new \Illuminate\Support\ViewErrorBag;
     $toasts = collect()
         ->when(session('success'), fn ($c) => $c->push(['type' => 'success', 'message' => session('success')]))
         ->when(session('status'), fn ($c) => $c->push(['type' => 'success', 'message' => session('status')]))
         ->when(session('error'), fn ($c) => $c->push(['type' => 'error', 'message' => session('error')]))
-        ->when($errors->any(), fn ($c) => $c->concat(
-            collect($errors->all())->map(fn ($e) => ['type' => 'error', 'message' => $e])
+        ->when($errorBag->any(), fn ($c) => $c->concat(
+            collect($errorBag->all())->map(fn ($e) => ['type' => 'error', 'message' => $e])
         ))
         ->values()
         ->map(fn ($t, $i) => $t + ['id' => $i]);
