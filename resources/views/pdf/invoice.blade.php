@@ -6,21 +6,21 @@
     <title>Invoice {{ $booking->booking_code }}</title>
     <style>
         @page {
-            margin: 40px 50px;
+            margin: 28px 50px;
         }
 
         body {
             font-family: 'DejaVu Sans', sans-serif;
             color: #1a1a1a;
             font-size: 12px;
-            line-height: 1.5;
+            line-height: 1.4;
             margin: 0;
             padding: 0;
         }
 
         /* Header */
         .header {
-            margin-bottom: 30px;
+            margin-bottom: 16px;
             overflow: hidden;
         }
 
@@ -65,7 +65,7 @@
 
         /* Invoice Meta */
         .meta-section {
-            margin-bottom: 25px;
+            margin-bottom: 14px;
         }
 
         .meta-label {
@@ -84,7 +84,7 @@
 
         /* Address Section */
         .address-section {
-            margin-bottom: 30px;
+            margin-bottom: 16px;
             overflow: hidden;
         }
 
@@ -124,15 +124,15 @@
             font-size: 14px;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
         }
 
         /* Table */
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
         .invoice-table thead th {
@@ -229,8 +229,8 @@
 
         /* Payment Info */
         .payment-info {
-            margin-top: 30px;
-            padding: 16px;
+            margin-top: 14px;
+            padding: 10px 14px;
             background-color: #f9fafb;
             border-radius: 6px;
             border: 1px solid #e5e7eb;
@@ -240,13 +240,13 @@
             font-size: 12px;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
         .payment-info-row {
             font-size: 11px;
             color: #6b7280;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .payment-info-row strong {
@@ -255,8 +255,8 @@
 
         /* Footer */
         .footer {
-            margin-top: 40px;
-            padding-top: 15px;
+            margin-top: 16px;
+            padding-top: 8px;
             border-top: 1px solid #e5e7eb;
             text-align: center;
             font-size: 10px;
@@ -271,8 +271,8 @@
 
         /* E-Ticket QR */
         .eticket-section {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 14px;
+            padding: 12px 16px;
             background-color: #f0fdf4;
             border: 1px dashed #86efac;
             border-radius: 8px;
@@ -291,15 +291,15 @@
         }
 
         .eticket-qr {
-            width: 140px;
-            height: 140px;
+            width: 105px;
+            height: 105px;
         }
 
         .eticket-title {
             font-size: 13px;
             font-weight: bold;
             color: #166534;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
