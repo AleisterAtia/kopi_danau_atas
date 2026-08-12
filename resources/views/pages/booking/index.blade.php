@@ -63,6 +63,8 @@
                                         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ __('Selesai') }}</span>
                                     @elseif($booking->status == 'cancelled')
                                         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ __('Dibatalkan') }}</span>
+                                    @elseif($booking->status == 'expired')
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">{{ __('Kadaluarsa') }}</span>
                                     @endif
                                 </td>
                                 <td class="py-4 px-6 text-right space-x-2">

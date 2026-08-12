@@ -35,9 +35,13 @@
                 @auth
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 nav-link">
-                            <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
-                                {{ substr(auth()->user()->name, 0, 1) }}
-                            </div>
+                            @if(auth()->user()->avatarUrl())
+                                <img src="{{ auth()->user()->avatarUrl() }}" class="w-8 h-8 rounded-full object-cover">
+                            @else
+                                <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
+                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                </div>
+                            @endif
                             <span class="hidden xl:inline">{{ auth()->user()->name }}</span>
                             <svg class="w-3.5 h-3.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
@@ -105,9 +109,13 @@
                 <div class="border-t border-gray-100 my-2 pt-2" x-data="{ accountOpen: false }">
                     <button type="button" @click="accountOpen = !accountOpen" class="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 font-medium">
                         <span class="flex items-center gap-2">
-                            <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
-                                {{ substr(auth()->user()->name, 0, 1) }}
-                            </span>
+                            @if(auth()->user()->avatarUrl())
+                                <img src="{{ auth()->user()->avatarUrl() }}" class="w-7 h-7 rounded-full object-cover">
+                            @else
+                                <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                </span>
+                            @endif
                             {{ auth()->user()->name }}
                         </span>
                         <svg class="w-4 h-4 opacity-50 transition-transform duration-200" :class="accountOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>

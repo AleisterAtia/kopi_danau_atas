@@ -30,6 +30,13 @@ class HomeController extends Controller
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
             ->withSum(['bookings as today_booked_guests' => fn ($q) => $q->whereDate('visit_date', today())->occupyingQuota()], 'guest_count')
+            // Without an explicit order, MySQL doesn't guarantee row order
+            // between executions — the ID and EN page loads are two
+            // separate queries (locale switch is a full navigation, not a
+            // client-side re-render), so the hero rotator's "first" card
+            // (always array index 0) could silently show a different
+            // package per language instead of just a translated label.
+            ->latest()
             ->take(4)
             ->get();
 

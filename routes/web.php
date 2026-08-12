@@ -117,6 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Profile
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profil/foto', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
 });
 
 /*
