@@ -23,7 +23,13 @@ class BookingStatusDisplayTest extends TestCase
         $user = User::factory()->create();
         Booking::factory()->create(['user_id' => $user->id, 'status' => 'expired']);
 
+        // Pin the locale: the assertion below checks the Indonesian source
+        // string via __(), which the app's default locale renders as-is,
+        // but CI's .env.example defaults to APP_LOCALE=en (unlike this
+        // project's real .env, which is `id`) and would otherwise translate
+        // it to "Expired" and fail the assertion.
         $this->actingAs($user)
+            ->withSession(['locale' => 'id'])
             ->get(route('booking.index'))
             ->assertOk()
             ->assertSee('Kadaluarsa');
@@ -35,6 +41,7 @@ class BookingStatusDisplayTest extends TestCase
         $booking = Booking::factory()->create(['user_id' => $user->id, 'status' => 'expired']);
 
         $this->actingAs($user)
+            ->withSession(['locale' => 'id'])
             ->get(route('booking.show', $booking))
             ->assertOk()
             ->assertSee('Kadaluarsa');
