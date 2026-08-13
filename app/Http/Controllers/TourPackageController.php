@@ -29,9 +29,15 @@ class TourPackageController extends Controller
             ->withSum(['bookings as today_booked_guests' => fn ($q) => $q->whereDate('visit_date', today())->occupyingQuota()], 'guest_count');
 
         if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+            // name/description are translatable JSON columns, which MySQL
+            // stores with a case-sensitive (utf8mb4_bin) collation regardless
+            // of the table's default — a plain LIKE only matched the exact
+            // case the guest typed. LOWER() on both sides makes it
+            // case-insensitive like every other filter on this page.
+            $needle = '%'.mb_strtolower($search).'%';
+            $query->where(function ($q) use ($needle) {
+                $q->whereRaw('LOWER(name) LIKE ?', [$needle])
+                    ->orWhereRaw('LOWER(description) LIKE ?', [$needle]);
             });
         }
 

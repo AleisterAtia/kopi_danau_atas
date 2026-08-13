@@ -148,6 +148,13 @@ class BookingResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(),
+
+                Tables\Columns\TextColumn::make('checked_in_at')
+                    ->label('Check-in')
+                    ->dateTime('d M Y H:i')
+                    ->placeholder('Belum check-in')
+                    ->description(fn (Booking $record): ?string => $record->checkedInBy?->name)
+                    ->sortable(),
             ])
             // Polling re-renders the table every tick, which fights with row
             // action modals (Confirm/Cancel/Refund use requiresConfirmation())
@@ -174,6 +181,16 @@ class BookingResource extends Resource
                     ->searchable()
                     ->preload(),
 
+                Tables\Filters\TernaryFilter::make('checked_in_at')
+                    ->label('Check-in')
+                    ->placeholder('Semua')
+                    ->trueLabel('Sudah check-in')
+                    ->falseLabel('Belum check-in')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('checked_in_at'),
+                        false: fn (Builder $query) => $query->whereNull('checked_in_at'),
+                    ),
+
                 Filter::make('visit_date')
                     ->form([
                         DatePicker::make('visit_from')->label('Visit Date From'),
@@ -197,23 +214,15 @@ class BookingResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('confirm')
-                    ->label('Confirm')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (Booking $record) => $record->status === 'paid')
-                    ->action(function (Booking $record) {
-                        $record->update(['status' => 'confirmed']);
-                        Notification::make()->title('Booking confirmed')->success()->send();
-                    }),
-
                 Tables\Actions\Action::make('complete')
                     ->label('Complete')
                     ->icon('heroicon-o-flag')
                     ->color('primary')
                     ->requiresConfirmation()
-                    ->visible(fn (Booking $record) => $record->status === 'confirmed')
+                    // 'confirmed' stays visible here too so any booking already
+                    // sitting in that state (from before the separate Confirm
+                    // step was removed) can still be completed.
+                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true))
                     ->action(function (Booking $record) {
                         $record->update(['status' => 'completed']);
                         Notification::make()->title('Booking marked as completed')->success()->send();

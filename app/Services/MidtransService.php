@@ -432,8 +432,9 @@ class MidtransService
 
     /**
      * Alert admins the moment a booking is actually paid (not when merely
-     * placed) — this is the point at which staff need to act (confirm the
-     * booking). Sent to the database (Filament bell) + broadcast over
+     * placed) — this is when staff should notice the booking, e.g. to check
+     * guest notes/special requests ahead of the visit. Sent to the database
+     * (Filament bell) + broadcast over
      * websockets (Reverb) for an instant in-panel toast, to WhatsApp for
      * staff not looking at the panel, and as a native OS push notification
      * for staff who opted in via "Aktifkan Notifikasi" but have no tab open.
@@ -450,7 +451,7 @@ class MidtransService
         try {
             Notification::make()
                 ->title('Pembayaran diterima')
-                ->body("{$booking->booking_code} — {$booking->guest_name} ({$booking->guest_count} orang) sudah bayar, menunggu konfirmasi.")
+                ->body("{$booking->booking_code} — {$booking->guest_name} ({$booking->guest_count} orang) sudah bayar.")
                 ->icon('heroicon-o-banknotes')
                 ->iconColor('success')
                 ->actions([
@@ -493,7 +494,7 @@ class MidtransService
             ."Kode: {$booking->booking_code}\n"
             ."Nama: {$booking->guest_name}\n"
             ."Jumlah tamu: {$booking->guest_count}\n\n"
-            .'Konfirmasi di: '.BookingResource::getUrl('edit', ['record' => $booking]);
+            .'Detail: '.BookingResource::getUrl('edit', ['record' => $booking]);
 
         foreach ($admins as $admin) {
             if (blank($admin->phone)) {
