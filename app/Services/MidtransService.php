@@ -61,9 +61,54 @@ class MidtransService
         // This keeps webhook correlation stable across "Pay Again" clicks.
         $orderId = ($existingPayment && $existingPayment->status === 'pending' && $existingPayment->midtrans_order_id)
             ? $existingPayment->midtrans_order_id
-            : 'KDA-'.$booking->id.'-'.time();
+            : $this->newOrderId($booking);
 
-        $params = [
+        try {
+            $snapToken = Snap::getSnapToken($this->buildSnapParams($booking, $orderId));
+        } catch (\Exception $e) {
+            // Midtrans locks an order_id the moment a payment channel is
+            // actually selected under it (e.g. a bank VA gets issued) — a
+            // later "Pay Again" reusing that same order_id is then rejected
+            // outright ("order_id has already been taken"), even though our
+            // own Payment row still shows the booking as pending. Mint a
+            // fresh order_id and retry once instead of dead-ending the
+            // customer with no way to pay short of cancelling the booking.
+            if (! str_contains($e->getMessage(), 'order_id has already been taken')) {
+                throw $e;
+            }
+
+            $orderId = $this->newOrderId($booking);
+            $snapToken = Snap::getSnapToken($this->buildSnapParams($booking, $orderId));
+        }
+
+        Payment::updateOrCreate(
+            ['booking_id' => $booking->id],
+            [
+                'midtrans_order_id' => $orderId,
+                'snap_token' => $snapToken,
+                'gross_amount' => round($booking->total_price, 2),
+                'status' => 'pending',
+            ]
+        );
+
+        Log::info('Midtrans Snap token created', [
+            'booking_id' => $booking->id,
+            'booking_code' => $booking->booking_code,
+            'order_id' => $orderId,
+            'reused' => $existingPayment && $existingPayment->midtrans_order_id === $orderId,
+        ]);
+
+        return $snapToken;
+    }
+
+    protected function newOrderId(Booking $booking): string
+    {
+        return 'KDA-'.$booking->id.'-'.time();
+    }
+
+    protected function buildSnapParams(Booking $booking, string $orderId): array
+    {
+        return [
             'transaction_details' => [
                 'order_id' => $orderId,
                 'gross_amount' => (int) round($booking->total_price),
@@ -99,27 +144,6 @@ class MidtransService
                 'duration' => $this->minutesLeftToPay($booking),
             ],
         ];
-
-        $snapToken = Snap::getSnapToken($params);
-
-        Payment::updateOrCreate(
-            ['booking_id' => $booking->id],
-            [
-                'midtrans_order_id' => $orderId,
-                'snap_token' => $snapToken,
-                'gross_amount' => round($booking->total_price, 2),
-                'status' => 'pending',
-            ]
-        );
-
-        Log::info('Midtrans Snap token created', [
-            'booking_id' => $booking->id,
-            'booking_code' => $booking->booking_code,
-            'order_id' => $orderId,
-            'reused' => $existingPayment && $existingPayment->midtrans_order_id === $orderId,
-        ]);
-
-        return $snapToken;
     }
 
     /**
