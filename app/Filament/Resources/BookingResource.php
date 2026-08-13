@@ -148,6 +148,13 @@ class BookingResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(),
+
+                Tables\Columns\TextColumn::make('checked_in_at')
+                    ->label('Check-in')
+                    ->dateTime('d M Y H:i')
+                    ->placeholder('Belum check-in')
+                    ->description(fn (Booking $record): ?string => $record->checkedInBy?->name)
+                    ->sortable(),
             ])
             // Polling re-renders the table every tick, which fights with row
             // action modals (Confirm/Cancel/Refund use requiresConfirmation())
@@ -173,6 +180,16 @@ class BookingResource extends Resource
                     ->label('Package')
                     ->searchable()
                     ->preload(),
+
+                Tables\Filters\TernaryFilter::make('checked_in_at')
+                    ->label('Check-in')
+                    ->placeholder('Semua')
+                    ->trueLabel('Sudah check-in')
+                    ->falseLabel('Belum check-in')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('checked_in_at'),
+                        false: fn (Builder $query) => $query->whereNull('checked_in_at'),
+                    ),
 
                 Filter::make('visit_date')
                     ->form([
