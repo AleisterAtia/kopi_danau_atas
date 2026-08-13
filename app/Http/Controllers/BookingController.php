@@ -24,6 +24,19 @@ class BookingController extends Controller
         return view('pages.booking.index', compact('bookings'));
     }
 
+    // Background polling target for the "Pesanan Saya" page: returns just the
+    // table rows so status changes made by an admin show up without a full
+    // page reload (mirrors how Filament's own polling works).
+    public function pollRows()
+    {
+        $bookings = Booking::where('user_id', auth()->id())
+            ->with(['tourPackage.images', 'payment', 'review'])
+            ->latest()
+            ->paginate(10);
+
+        return view('pages.booking._rows', compact('bookings'));
+    }
+
     /**
      * Show the "Review Order" page where the user fills in their details
      * before being sent to checkout. This is the new step between the
