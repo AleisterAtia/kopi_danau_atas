@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\MidtransService;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Transaction;
 
 class PaymentController extends Controller
@@ -41,6 +42,16 @@ class PaymentController extends Controller
                 'message' => $e->getMessage(),
             ], 409);
         } catch (\Throwable $e) {
+            // Was previously swallowed — the frontend only shows a generic
+            // "gagal mendapatkan token" alert, so without this the real
+            // Midtrans/API error (bad order_id reuse, expired keys, etc.)
+            // left no trace anywhere.
+            Log::error('Midtrans Snap token creation failed', [
+                'booking_id' => $booking->id,
+                'booking_code' => $booking->booking_code,
+                'exception' => get_class($e).': '.$e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal membuat token pembayaran: '.$e->getMessage(),
