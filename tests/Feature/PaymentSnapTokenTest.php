@@ -42,4 +42,34 @@ class PaymentSnapTokenTest extends TestCase
 
         app(MidtransService::class)->createSnapToken($booking);
     }
+
+    /**
+     * @return array<array{0: string, 1: bool}>
+     */
+    public static function duplicateOrderIdMessages(): array
+    {
+        return [
+            // Observed in production for the same condition — Midtrans
+            // replies in whichever language the merchant account is set to.
+            ['transaction_details.order_id has already been taken', true],
+            ['transaction_details.order_id sudah digunakan', true],
+            ['transaction_details.gross_amount is not equal to item_details', false],
+        ];
+    }
+
+    #[DataProvider('duplicateOrderIdMessages')]
+    public function test_duplicate_order_id_error_is_detected_regardless_of_message_language(string $message, bool $expected): void
+    {
+        $this->assertSame(
+            $expected,
+            app(MidtransService::class)->isDuplicateOrderIdError(new \Exception($message, 400))
+        );
+    }
+
+    public function test_duplicate_order_id_error_requires_http_400(): void
+    {
+        $this->assertFalse(
+            app(MidtransService::class)->isDuplicateOrderIdError(new \Exception('order_id has already been taken', 500))
+        );
+    }
 }

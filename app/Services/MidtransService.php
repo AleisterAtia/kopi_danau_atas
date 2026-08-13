@@ -69,11 +69,19 @@ class MidtransService
             // Midtrans locks an order_id the moment a payment channel is
             // actually selected under it (e.g. a bank VA gets issued) — a
             // later "Pay Again" reusing that same order_id is then rejected
-            // outright ("order_id has already been taken"), even though our
-            // own Payment row still shows the booking as pending. Mint a
-            // fresh order_id and retry once instead of dead-ending the
-            // customer with no way to pay short of cancelling the booking.
-            if (! str_contains($e->getMessage(), 'order_id has already been taken')) {
+            // outright, even though our own Payment row still shows the
+            // booking as pending. Mint a fresh order_id and retry once
+            // instead of dead-ending the customer with no way to pay short
+            // of cancelling the booking.
+            //
+            // Matched on the "order_id" field name rather than the rest of
+            // the message: Midtrans returns this error in whatever language
+            // the merchant account is set to ("order_id has already been
+            // taken" vs "order_id sudah digunakan" have both been observed
+            // in production for the exact same condition), so pinning to
+            // one language's exact phrase silently stops catching it the
+            // moment the account's locale differs.
+            if (! $this->isDuplicateOrderIdError($e)) {
                 throw $e;
             }
 
@@ -103,7 +111,16 @@ class MidtransService
 
     protected function newOrderId(Booking $booking): string
     {
-        return 'KDA-'.$booking->id.'-'.time();
+        // uniqid(), not just time(): two clicks landing in the same second
+        // (a fast double-click, or a retry immediately following a failed
+        // first attempt) must never mint the same "fresh" order_id, or the
+        // retry below collides with itself.
+        return 'KDA-'.$booking->id.'-'.time().'-'.uniqid();
+    }
+
+    public function isDuplicateOrderIdError(\Exception $e): bool
+    {
+        return $e->getCode() === 400 && str_contains($e->getMessage(), 'order_id');
     }
 
     protected function buildSnapParams(Booking $booking, string $orderId): array
