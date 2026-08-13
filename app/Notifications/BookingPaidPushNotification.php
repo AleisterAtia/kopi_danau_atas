@@ -32,7 +32,7 @@ class BookingPaidPushNotification extends Notification implements ShouldQueue
         return (new WebPushMessage)
             ->title('Pembayaran diterima')
             ->icon('/favicon.ico')
-            ->body("{$this->booking->booking_code} — {$this->booking->guest_name} ({$this->booking->guest_count} orang) sudah bayar, menunggu konfirmasi.")
+            ->body("{$this->booking->booking_code} — {$this->booking->guest_name} ({$this->booking->guest_count} orang) sudah bayar.")
             ->data(['url' => BookingResource::getUrl('edit', ['record' => $this->booking])]);
     }
 }
