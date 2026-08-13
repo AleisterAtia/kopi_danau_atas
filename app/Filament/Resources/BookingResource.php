@@ -214,102 +214,104 @@ class BookingResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('complete')
-                    ->label('Complete')
-                    ->icon('heroicon-o-flag')
-                    ->color('primary')
-                    ->requiresConfirmation()
-                    // 'confirmed' stays visible here too so any booking already
-                    // sitting in that state (from before the separate Confirm
-                    // step was removed) can still be completed.
-                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true))
-                    ->action(function (Booking $record) {
-                        $record->update(['status' => 'completed']);
-                        Notification::make()->title('Booking marked as completed')->success()->send();
-                    }),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('complete')
+                        ->label('Complete')
+                        ->icon('heroicon-o-flag')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        // 'confirmed' stays visible here too so any booking already
+                        // sitting in that state (from before the separate Confirm
+                        // step was removed) can still be completed.
+                        ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true))
+                        ->action(function (Booking $record) {
+                            $record->update(['status' => 'completed']);
+                            Notification::make()->title('Booking marked as completed')->success()->send();
+                        }),
 
-                Tables\Actions\Action::make('cancel')
-                    ->label('Cancel')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->visible(fn (Booking $record) => in_array($record->status, ['pending', 'paid', 'confirmed']))
-                    ->action(function (Booking $record) {
-                        $record->update(['status' => 'cancelled']);
-                        Notification::make()->title('Booking cancelled')->warning()->send();
-                    }),
+                    Tables\Actions\Action::make('cancel')
+                        ->label('Cancel')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn (Booking $record) => in_array($record->status, ['pending', 'paid', 'confirmed']))
+                        ->action(function (Booking $record) {
+                            $record->update(['status' => 'cancelled']);
+                            Notification::make()->title('Booking cancelled')->warning()->send();
+                        }),
 
-                Tables\Actions\Action::make('refund')
-                    ->label('Refund')
-                    ->icon('heroicon-o-banknotes')
-                    ->color('danger')
-                    // Only settled payments on a paid/confirmed booking can be
-                    // refunded; `completed` is terminal (the visit happened).
-                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true)
-                        && $record->payment?->status === 'settlement')
-                    ->requiresConfirmation()
-                    ->modalHeading('Refund pembayaran')
-                    ->modalDescription('Booking akan dibatalkan & kuota dibebaskan. Selesaikan transfer dana aktual di dashboard Midtrans.')
-                    ->form([
-                        Forms\Components\Textarea::make('refund_note')
-                            ->label('Catatan / alasan refund')
-                            ->required()
-                            ->maxLength(500)
-                            ->rows(3),
-                    ])
-                    ->action(function (Booking $record, array $data) {
-                        try {
-                            app(RefundService::class)->refund($record, $data['refund_note'], auth()->user());
-                            Notification::make()
-                                ->title('Pesanan ditandai refund')
-                                ->body('Jangan lupa selesaikan refund di dashboard Midtrans.')
-                                ->success()
-                                ->send();
-                        } catch (\Throwable $e) {
-                            Notification::make()
-                                ->title('Gagal melakukan refund')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    }),
-
-                Tables\Actions\Action::make('resendEticket')
-                    ->label('Resend E-ticket')
-                    ->icon('heroicon-o-envelope')
-                    ->color('gray')
-                    ->requiresConfirmation()
-                    ->modalHeading('Kirim ulang e-tiket')
-                    ->modalDescription('Email konfirmasi & e-tiket akan dikirim ulang ke alamat email pemesan.')
-                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed', 'completed']))
-                    ->action(function (Booking $record) {
-                        try {
-                            // Pastikan QR sudah ada (regenerate jika tidak ada)
-                            if (! $record->qr_code_path) {
-                                $qrPath = app(QrCodeService::class)->generate($record);
-                                $record->update(['qr_code_path' => $qrPath]);
-                                $record->refresh();
+                    Tables\Actions\Action::make('refund')
+                        ->label('Refund')
+                        ->icon('heroicon-o-banknotes')
+                        ->color('danger')
+                        // Only settled payments on a paid/confirmed booking can be
+                        // refunded; `completed` is terminal (the visit happened).
+                        ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true)
+                            && $record->payment?->status === 'settlement')
+                        ->requiresConfirmation()
+                        ->modalHeading('Refund pembayaran')
+                        ->modalDescription('Booking akan dibatalkan & kuota dibebaskan. Selesaikan transfer dana aktual di dashboard Midtrans.')
+                        ->form([
+                            Forms\Components\Textarea::make('refund_note')
+                                ->label('Catatan / alasan refund')
+                                ->required()
+                                ->maxLength(500)
+                                ->rows(3),
+                        ])
+                        ->action(function (Booking $record, array $data) {
+                            try {
+                                app(RefundService::class)->refund($record, $data['refund_note'], auth()->user());
+                                Notification::make()
+                                    ->title('Pesanan ditandai refund')
+                                    ->body('Jangan lupa selesaikan refund di dashboard Midtrans.')
+                                    ->success()
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                Notification::make()
+                                    ->title('Gagal melakukan refund')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
                             }
+                        }),
 
-                            Mail::to($record->guest_email ?? $record->user->email)
-                                ->queue(new BookingConfirmation($record, app()->getLocale()));
+                    Tables\Actions\Action::make('resendEticket')
+                        ->label('Resend E-ticket')
+                        ->icon('heroicon-o-envelope')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalHeading('Kirim ulang e-tiket')
+                        ->modalDescription('Email konfirmasi & e-tiket akan dikirim ulang ke alamat email pemesan.')
+                        ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed', 'completed']))
+                        ->action(function (Booking $record) {
+                            try {
+                                // Pastikan QR sudah ada (regenerate jika tidak ada)
+                                if (! $record->qr_code_path) {
+                                    $qrPath = app(QrCodeService::class)->generate($record);
+                                    $record->update(['qr_code_path' => $qrPath]);
+                                    $record->refresh();
+                                }
 
-                            Notification::make()
-                                ->title('E-tiket masuk antrian email')
-                                ->body('Email akan terkirim setelah queue worker memproses.')
-                                ->success()
-                                ->send();
-                        } catch (\Throwable $e) {
-                            Notification::make()
-                                ->title('Gagal mengirim e-tiket')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    }),
+                                Mail::to($record->guest_email ?? $record->user->email)
+                                    ->queue(new BookingConfirmation($record, app()->getLocale()));
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                                Notification::make()
+                                    ->title('E-tiket masuk antrian email')
+                                    ->body('Email akan terkirim setelah queue worker memproses.')
+                                    ->success()
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                Notification::make()
+                                    ->title('Gagal mengirim e-tiket')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
+
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ])->label('Aksi')->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
