@@ -2,6 +2,10 @@
 
 @section('title', __('Pesanan Saya'))
 
+@push('head')
+    <meta http-equiv="refresh" content="2">
+@endpush
+
 @section('content')
 <div class="pt-24 pb-12 bg-primary">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
