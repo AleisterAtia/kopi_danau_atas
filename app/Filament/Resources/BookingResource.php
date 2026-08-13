@@ -197,23 +197,15 @@ class BookingResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('confirm')
-                    ->label('Confirm')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (Booking $record) => $record->status === 'paid')
-                    ->action(function (Booking $record) {
-                        $record->update(['status' => 'confirmed']);
-                        Notification::make()->title('Booking confirmed')->success()->send();
-                    }),
-
                 Tables\Actions\Action::make('complete')
                     ->label('Complete')
                     ->icon('heroicon-o-flag')
                     ->color('primary')
                     ->requiresConfirmation()
-                    ->visible(fn (Booking $record) => $record->status === 'confirmed')
+                    // 'confirmed' stays visible here too so any booking already
+                    // sitting in that state (from before the separate Confirm
+                    // step was removed) can still be completed.
+                    ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed'], true))
                     ->action(function (Booking $record) {
                         $record->update(['status' => 'completed']);
                         Notification::make()->title('Booking marked as completed')->success()->send();
