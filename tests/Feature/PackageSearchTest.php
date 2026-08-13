@@ -34,6 +34,18 @@ class PackageSearchTest extends TestCase
             ->assertDontSee('Workshop Roasting');
     }
 
+    public function test_keyword_search_is_case_insensitive(): void
+    {
+        TourPackage::factory()->create(['name' => 'Paket Petik Kopi Arabika', 'description' => 'Memetik ceri kopi.']);
+        TourPackage::factory()->create(['name' => 'Workshop Roasting', 'description' => 'Belajar menyangrai.']);
+
+        $response = $this->get(route('packages.index', ['q' => 'PETIK']));
+
+        $response->assertOk()
+            ->assertSee('Paket Petik Kopi Arabika')
+            ->assertDontSee('Workshop Roasting');
+    }
+
     public function test_filter_by_category_returns_only_that_category(): void
     {
         $fotografi = PackageCategory::create(['name' => 'Fotografi']);
