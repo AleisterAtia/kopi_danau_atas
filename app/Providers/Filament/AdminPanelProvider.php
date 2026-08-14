@@ -58,6 +58,18 @@ class AdminPanelProvider extends PanelProvider
                     '<button type="button" id="enable-push-notifications" class="fi-btn fi-color-gray fi-btn-size-sm rounded-lg px-3 py-2 text-sm font-medium">🔔 Aktifkan Notifikasi</button>'
                 ),
             )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                // Background polling (table ->poll(), databaseNotificationsPolling())
+                // keeps firing Livewire requests even after the session expires.
+                // Livewire's default handling for that is a native confirm()
+                // dialog + raw page reload, which re-renders the authenticated
+                // shell against a logged-out session and produces a broken,
+                // unstyled mashup. Redirect to login instead.
+                fn (): string => Blade::render(
+                    "<script>document.addEventListener('livewire:init', () => { Livewire.onPageExpired(() => { window.location.href = '".route('filament.admin.auth.login')."'; }); });</script>"
+                ),
+            )
             ->plugin(
                 SpatieLaravelTranslatablePlugin::make()
                     ->defaultLocales(['id', 'en'])
