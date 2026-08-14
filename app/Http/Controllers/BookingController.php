@@ -125,6 +125,19 @@ class BookingController extends Controller
         return view('pages.booking.show', compact('booking'));
     }
 
+    // Background polling target for the detail page: returns the status
+    // badge + QR/payment card regions (mirrors pollRows() above), so a
+    // payment or admin check-in shows up without a reload. The review form
+    // further down the page is deliberately left out of the polled region
+    // so a draft comment being typed doesn't get wiped every 2 seconds.
+    public function pollShow(Booking $booking)
+    {
+        abort_if($booking->user_id !== auth()->id(), 403);
+        $booking->load(['tourPackage.images', 'payment', 'review']);
+
+        return view('pages.booking._poll', compact('booking'));
+    }
+
     /**
      * Cancel a booking on the owner's request.
      *

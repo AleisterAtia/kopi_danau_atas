@@ -104,6 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/{booking}', [BookingController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{booking}/poll', [BookingController::class, 'pollShow'])->name('booking.show.poll');
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/{booking}/invoice', [InvoiceController::class, 'download'])->name('booking.invoice');
 
