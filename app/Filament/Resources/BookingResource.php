@@ -285,9 +285,15 @@ class BookingResource extends Resource
                         ->visible(fn (Booking $record) => in_array($record->status, ['paid', 'confirmed', 'completed']))
                         ->action(function (Booking $record) {
                             try {
-                                // Pastikan QR sudah ada (regenerate jika tidak ada)
-                                if (! $record->qr_code_path) {
-                                    $qrPath = app(QrCodeService::class)->generate($record);
+                                // Regenerate the QR before resending: generate() is
+                                // idempotent (a no-op if a same-format file already
+                                // exists), but bookings whose QR was created before
+                                // ext-imagick's SVG fallback was replaced with a PNG
+                                // one are still pointing at the old .svg — this
+                                // upgrades them to .png so the resent email doesn't
+                                // repeat the broken-inline-image bug.
+                                $qrPath = app(QrCodeService::class)->generate($record);
+                                if ($qrPath !== $record->qr_code_path) {
                                     $record->update(['qr_code_path' => $qrPath]);
                                     $record->refresh();
                                 }

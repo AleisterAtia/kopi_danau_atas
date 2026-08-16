@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\Booking;
 use App\Models\SiteSetting;
-use App\Services\QrCodeService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -77,30 +76,24 @@ class BookingConfirmation extends Mailable implements ShouldQueue
     }
 
     /**
-     * Attach: QR PNG (referenced inline via cid:qr-code in the markdown view)
-     * and the rendered invoice PDF.
+     * Attach the rendered invoice PDF.
+     *
+     * The QR code is NOT listed here — it's embedded inline by
+     * {{ $message->embed(...) }} in the markdown view, which attaches it
+     * to the message itself and needs no help from this array. Adding it
+     * here too used to double-attach the same QR as a second, redundant
+     * downloadable file on top of the inline image.
      */
     public function attachments(): array
     {
-        $attachments = [];
-
         // Invoice PDF — rendered fresh so it always reflects the latest state.
         $pdf = Pdf::loadView('pdf.invoice', ['booking' => $this->booking])
             ->setPaper('a4', 'portrait')
             ->output();
 
-        $attachments[] = Attachment::fromData(fn () => $pdf, 'Invoice-'.$this->booking->booking_code.'.pdf')
-            ->withMime('application/pdf');
-
-        // QR code — attached inline so the email body can reference it via
-        // {{ $message->embed(...) }} or our pre-resolved cid.
-        $qrPath = app(QrCodeService::class)->absolutePath($this->booking);
-        if ($qrPath) {
-            $attachments[] = Attachment::fromPath($qrPath)
-                ->as('eticket-qr-'.$this->booking->booking_code.pathinfo($qrPath, PATHINFO_EXTENSION))
-                ->withMime(str_ends_with($qrPath, '.svg') ? 'image/svg+xml' : 'image/png');
-        }
-
-        return $attachments;
+        return [
+            Attachment::fromData(fn () => $pdf, 'Invoice-'.$this->booking->booking_code.'.pdf')
+                ->withMime('application/pdf'),
+        ];
     }
 }
