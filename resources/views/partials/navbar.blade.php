@@ -4,8 +4,7 @@
         <div class="flex items-center justify-between h-[72px]">
 
             {{-- Logo --}}
-            <a href="{{ route('home') }}" class="nav-logo font-extrabold text-[1.35rem] tracking-tight transition-colors duration-300 flex items-center gap-2">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo Kopi Danau Diatas" class="h-9 w-9 object-contain rounded-full">
+            <a href="{{ route('home') }}" class="nav-logo font-extrabold text-[1.35rem] tracking-tight transition-colors duration-300">
                 Kopi Danau Diatas
             </a>
 
