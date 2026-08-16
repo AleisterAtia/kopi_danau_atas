@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use BaconQrCode\Common\ErrorCorrectionLevel;
+use BaconQrCode\Encoder\Encoder;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -36,9 +38,14 @@ class QrCodeService
             return $relativePath;
         }
 
-        // PNG requires the `imagick` extension. Fall back to SVG when PNG
-        // generation fails (no imagick) so the system still works on
-        // bare-bones PHP installs.
+        // The `simplesoftwareio/simple-qrcode` PNG backend hard-requires the
+        // `imagick` extension. When it's missing, fall back to rendering the
+        // PNG ourselves from the raw QR matrix via GD (renderPngWithGd())
+        // instead of emitting SVG: SVG is fine for the on-site <img> tag
+        // (browsers render it natively), but most email clients — Gmail
+        // included — refuse to render inline SVG at all, which left the
+        // e-ticket QR broken in the booking confirmation email even though
+        // it displayed fine on the booking detail page.
         try {
             $png = QrCode::format('png')
                 ->size(400)
@@ -48,23 +55,71 @@ class QrCodeService
 
             Storage::disk('public')->put($relativePath, $png);
         } catch (\Throwable $e) {
-            // Imagick not available — emit SVG instead.
-            $relativePath = 'qrcodes/'.$booking->booking_code.'.svg';
+            try {
+                Storage::disk('public')->put($relativePath, $this->renderPngWithGd($payload));
+            } catch (\Throwable $e2) {
+                // Neither Imagick nor GD available — last resort. Only
+                // usable for the on-site <img> tag, not for emails.
+                $relativePath = 'qrcodes/'.$booking->booking_code.'.svg';
 
-            if (Storage::disk('public')->exists($relativePath)) {
-                return $relativePath;
+                if (Storage::disk('public')->exists($relativePath)) {
+                    return $relativePath;
+                }
+
+                $svg = QrCode::format('svg')
+                    ->size(400)
+                    ->margin(1)
+                    ->errorCorrection('H')
+                    ->generate($payload);
+
+                Storage::disk('public')->put($relativePath, $svg);
             }
-
-            $svg = QrCode::format('svg')
-                ->size(400)
-                ->margin(1)
-                ->errorCorrection('H')
-                ->generate($payload);
-
-            Storage::disk('public')->put($relativePath, $svg);
         }
 
         return $relativePath;
+    }
+
+    /**
+     * Render a QR PNG directly from the raw module matrix using GD.
+     *
+     * Bypasses bacon-qr-code's path-based Renderer (Module/Eye/ImageBackEnd)
+     * entirely — each matrix cell is just painted as a filled square, so
+     * there's no polygon winding-rule to get wrong (the finder-pattern
+     * "eye" rings are naturally correct because their hole is simply
+     * un-set matrix cells, not a shape with a hole punched out of it).
+     * `ext-gd` ships enabled on virtually every PHP install, unlike
+     * `ext-imagick`.
+     */
+    private function renderPngWithGd(string $payload): string
+    {
+        $matrix = Encoder::encode($payload, ErrorCorrectionLevel::H())->getMatrix();
+        $moduleCount = $matrix->getWidth();
+
+        $margin = 1;
+        $moduleSize = max(1, intdiv(400, $moduleCount + $margin * 2));
+        $imageSize = $moduleSize * ($moduleCount + $margin * 2);
+
+        $image = imagecreatetruecolor($imageSize, $imageSize);
+        $white = imagecolorallocate($image, 255, 255, 255);
+        $black = imagecolorallocate($image, 0, 0, 0);
+        imagefilledrectangle($image, 0, 0, $imageSize, $imageSize, $white);
+
+        for ($y = 0; $y < $moduleCount; $y++) {
+            for ($x = 0; $x < $moduleCount; $x++) {
+                if ($matrix->get($x, $y) === 1) {
+                    $px = ($x + $margin) * $moduleSize;
+                    $py = ($y + $margin) * $moduleSize;
+                    imagefilledrectangle($image, $px, $py, $px + $moduleSize - 1, $py + $moduleSize - 1, $black);
+                }
+            }
+        }
+
+        ob_start();
+        imagepng($image);
+        $png = ob_get_clean();
+        imagedestroy($image);
+
+        return $png;
     }
 
     /**
