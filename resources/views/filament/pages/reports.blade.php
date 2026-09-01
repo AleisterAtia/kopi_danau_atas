@@ -19,6 +19,7 @@
                             <th class="py-2">Tanggal</th>
                             <th class="py-2">Pendapatan</th>
                             <th class="py-2">Transaksi</th>
+                            <th class="py-2">Detail Paket</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -27,10 +28,11 @@
                                 <td class="py-2">{{ \Carbon\Carbon::parse($row->date)->translatedFormat('d M Y') }}</td>
                                 <td class="py-2">Rp {{ number_format($row->total, 0, ',', '.') }}</td>
                                 <td class="py-2">{{ $row->transaksi }}</td>
+                                <td class="py-2">{{ $row->package_name }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="py-4 text-center text-gray-400">Tidak ada data pada periode ini.</td>
+                                <td colspan="4" class="py-4 text-center text-gray-400">Tidak ada data pada periode ini.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -40,6 +42,7 @@
                                 <td class="py-2">Total</td>
                                 <td class="py-2">Rp {{ number_format($revenueTotal, 0, ',', '.') }}</td>
                                 <td class="py-2">{{ $revenue->sum('transaksi') }}</td>
+                                <td class="py-2"></td>
                             </tr>
                         </tfoot>
                     @endif

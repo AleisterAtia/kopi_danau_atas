@@ -34,6 +34,8 @@
         capacity: {{ $package->daily_capacity }}, 
         available: {{ $package->daily_capacity }},
         price: {{ $package->price }},
+        locale: '{{ app()->getLocale() }}',
+        usdRate: {{ \App\Support\Currency::rate() }},
         checking: false,
         checkQuota() {
             if(!this.visitDate) return;
@@ -47,6 +49,12 @@
                     this.checking = false;
                 })
                 .catch(() => this.checking = false);
+        },
+        formattedTotal() {
+            const total = this.guestCount * this.price;
+            return this.locale === 'en'
+                ? '$' + (total / this.usdRate).toFixed(2)
+                : 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
         }
     }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -165,7 +173,7 @@
                     <div class="mb-6 pb-6 border-b border-border">
                         <span class="text-sm text-gray-500 uppercase tracking-wider font-semibold">{{ __('Harga Paket') }}</span>
                         <div class="text-3xl font-bold text-primary font-heading mt-1">
-                            Rp {{ number_format($package->price, 0, ',', '.') }}<span class="text-sm text-gray-500 font-normal">{{ __('/orang') }}</span>
+                            {{ \App\Support\Currency::format($package->price) }}<span class="text-sm text-gray-500 font-normal">{{ __('/orang') }}</span>
                         </div>
                     </div>
 
@@ -196,12 +204,12 @@
 
                         <div class="bg-bg-warm border border-border rounded-lg p-4 mb-6" x-show="visitDate && guestCount > 0">
                             <div class="flex justify-between text-sm mb-2">
-                                <span class="text-gray-600" x-text="`${guestCount} x Rp {{ number_format($package->price, 0, ',', '.') }}`"></span>
-                                <span class="font-medium text-gray-900" x-text="`Rp ${new Intl.NumberFormat('id-ID').format(guestCount * price)}`"></span>
+                                <span class="text-gray-600" x-text="`${guestCount} x {{ \App\Support\Currency::format($package->price) }}`"></span>
+                                <span class="font-medium text-gray-900" x-text="formattedTotal()"></span>
                             </div>
                             <div class="border-t border-gray-200 pt-2 flex justify-between font-bold">
                                 <span class="text-gray-900">{{ __('Total') }}</span>
-                                <span class="text-primary" x-text="`Rp ${new Intl.NumberFormat('id-ID').format(guestCount * price)}`"></span>
+                                <span class="text-primary" x-text="formattedTotal()"></span>
                             </div>
                         </div>
 

@@ -20,7 +20,7 @@
                 {{ __('Agrowisata') }} <span>&bull;</span> {{ __('Edukasi') }} <span>&bull;</span> {{ __('Kopi Arabika') }}
             </p>
             <h1 class="text-4xl sm:text-5xl lg:text-[3.75rem] font-extrabold text-white leading-[1.08] tracking-[-0.02em] mb-6 anim-fade-up" style="animation-delay:.2s">
-                {{ $hero->title ?? __('Jelajahi Keindahan Agrowisata Kopi Solok') }}
+                {{ $hero->title ?? __('Jelajahi Keindahan  & Autentik Agrowisata Kopi Solok') }}
             </h1>
             <div class="text-lg text-white/80 leading-relaxed mb-10 max-w-xl anim-fade-up" style="animation-delay:.3s">
                 {!! $hero->description ?? __('Rasakan pengalaman unik memetik kopi langsung dari kebun Arabika di dataran tinggi Danau Diatas.') !!}
@@ -77,7 +77,7 @@
             x-data="{
                 items: @js($featuredPackages->take(4)->map(fn ($p) => [
                     'name' => $p->name,
-                    'price' => 'Rp ' . number_format($p->price, 0, ',', '.'),
+                    'price' => \App\Support\Currency::format($p->price),
                     'image' => optional($p->images->first())->image_path ? Storage::url($p->images->first()->image_path) : null,
                     'url' => route('packages.show', $p->slug),
                 ])),

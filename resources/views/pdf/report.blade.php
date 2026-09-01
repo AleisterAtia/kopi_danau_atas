@@ -105,6 +105,7 @@
         <thead>
             <tr>
                 <th>Tanggal</th>
+                <th>Nama Paket</th>
                 <th>Pendapatan</th>
                 <th>Transaksi</th>
             </tr>
@@ -113,12 +114,13 @@
             @forelse($revenue as $row)
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($row->date)->translatedFormat('d M Y') }}</td>
+                    <td>{{ $row->package_name }}</td>
                     <td>Rp {{ number_format($row->total, 0, ',', '.') }}</td>
                     <td>{{ $row->transaksi }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="3">Tidak ada data pada periode ini.</td>
+                    <td colspan="4">Tidak ada data pada periode ini.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -126,6 +128,7 @@
             <tfoot>
                 <tr>
                     <td>Total</td>
+                    <td></td>
                     <td>Rp {{ number_format($revenue->sum('total'), 0, ',', '.') }}</td>
                     <td>{{ $revenue->sum('transaksi') }}</td>
                 </tr>

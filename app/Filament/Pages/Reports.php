@@ -76,10 +76,12 @@ class Reports extends Page implements HasForms
 
     public function revenueRows(): Collection
     {
-        return Payment::where('status', 'settlement')
+        return Payment::where('payments.status', 'settlement')
             ->whereBetween('paid_at', [$this->periodFrom(), $this->periodUntil()])
-            ->selectRaw('DATE(paid_at) as date, SUM(gross_amount) as total, COUNT(*) as transaksi')
-            ->groupBy('date')
+            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
+            ->join('tour_packages', 'bookings.tour_package_id', '=', 'tour_packages.id')
+            ->selectRaw('DATE(paid_at) as date, tour_packages.name as package_name, SUM(gross_amount) as total, COUNT(*) as transaksi')
+            ->groupBy('date', 'tour_packages.name')
             ->orderBy('date')
             ->get();
     }
@@ -119,9 +121,9 @@ class Reports extends Page implements HasForms
             $out = fopen('php://output', 'w');
 
             fputcsv($out, ['Laporan Pendapatan']);
-            fputcsv($out, ['Tanggal', 'Total Pendapatan', 'Jumlah Transaksi']);
+            fputcsv($out, ['Tanggal', 'Nama Paket', 'Total Pendapatan', 'Jumlah Transaksi']);
             foreach ($revenue as $row) {
-                fputcsv($out, [$row->date, $row->total, $row->transaksi]);
+                fputcsv($out, [$row->date, $row->package_name, $row->total, $row->transaksi]);
             }
 
             fputcsv($out, []);
