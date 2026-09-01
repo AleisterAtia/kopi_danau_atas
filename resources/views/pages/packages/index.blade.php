@@ -103,7 +103,90 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 @foreach($packages as $package)
-                    <x-package-card :package="$package" />
+                    @php
+                        $remaining = max(0, $package->daily_capacity - (int) ($package->today_booked_guests ?? 0));
+                        $facilityList = $package->facilities
+                            ? collect(explode("\n", $package->facilities))->map(fn ($f) => trim($f))->filter()->values()
+                            : collect();
+                    @endphp
+                    <div class="h-full flex flex-col bg-white rounded-xl border border-border shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                        <div class="flex flex-col flex-1">
+                            {{-- Image --}}
+                            <a href="{{ route('packages.show', $package->slug) }}" class="relative block aspect-[16/9]">
+                                @if($package->images->first())
+                                    <img src="{{ Storage::url($package->images->first()->image_path) }}" alt="{{ $package->name }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async">
+                                @else
+                                    <div class="absolute inset-0 bg-primary-50 flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-primary/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </div>
+                                @endif
+                                @if($remaining <= 5)
+                                    <span class="absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-bold shadow-sm {{ $remaining === 0 ? 'bg-red-500/90 text-white' : 'bg-amber-400/95 text-amber-950' }}">
+                                        {{ $remaining === 0 ? __('Penuh hari ini') : __(':n slot tersisa hari ini', ['n' => $remaining]) }}
+                                    </span>
+                                @endif
+                            </a>
+
+                            {{-- Info --}}
+                            <div class="p-5 border-t border-border">
+                                <h3 class="text-lg font-bold text-text mb-2 leading-tight">
+                                    <a href="{{ route('packages.show', $package->slug) }}" class="hover:text-primary transition-colors">{{ $package->name }}</a>
+                                </h3>
+                                <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-text-secondary mb-3">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        {{ $package->duration_hours }} {{ __('jam') }}
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        {{ __('Maks.') }} {{ $package->daily_capacity }}
+                                    </span>
+                                    @if(($package->reviews_count ?? 0) > 0)
+                                        <span class="flex items-center gap-1 text-amber-500">
+                                            ★ {{ number_format($package->average_rating, 1) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-sm text-text-secondary line-clamp-3">
+                                    {{ \Illuminate\Support\Str::limit(strip_tags($package->description), 140) }}
+                                </p>
+                            </div>
+
+                            {{-- Fasilitas — ditampilkan langsung di listing agar wisatawan bisa
+                                 membandingkan antar paket tanpa harus buka halaman detail satu-satu. --}}
+                            <div class="p-5 border-t border-border">
+                                <h4 class="text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">{{ __('Fasilitas') }}</h4>
+                                @if($facilityList->isNotEmpty())
+                                    <ul class="space-y-1.5 text-sm text-text-secondary">
+                                        @foreach($facilityList->take(4) as $facility)
+                                        <li class="flex items-start gap-1.5">
+                                            <svg class="w-4 h-4 text-success flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>{{ $facility }}</span>
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                    @if($facilityList->count() > 4)
+                                        <p class="text-xs text-text-muted mt-1.5">+{{ $facilityList->count() - 4 }} {{ __('lainnya') }}</p>
+                                    @endif
+                                @else
+                                    <p class="text-sm text-text-muted italic">{{ __('Belum ada info fasilitas') }}</p>
+                                @endif
+                            </div>
+
+                            {{-- Harga & CTA — mt-auto pins this to the bottom so the button lines
+                                 up across cards regardless of how long the facilities list is. --}}
+                            <div class="p-5 border-t border-border bg-bg-warm/40 mt-auto">
+                                <div class="mb-3">
+                                    <span class="text-xs text-text-muted uppercase tracking-wide">{{ __('Mulai dari') }}</span>
+                                    <div class="text-xl font-bold text-primary">{{ \App\Support\Currency::format($package->price) }}</div>
+                                    <span class="text-xs text-text-muted">{{ __('/orang') }}</span>
+                                </div>
+                                <a href="{{ route('packages.show', $package->slug) }}" class="btn-primary w-full justify-center text-sm">
+                                    {{ __('Lihat Detail') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 @endforeach
             </div>
 

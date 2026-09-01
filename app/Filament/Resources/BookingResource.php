@@ -302,8 +302,8 @@ class BookingResource extends Resource
                                     ->queue(new BookingConfirmation($record, app()->getLocale()));
 
                                 Notification::make()
-                                    ->title('E-tiket masuk antrian email')
-                                    ->body('Email akan terkirim setelah queue worker memproses.')
+                                    ->title('E-tiket sedang dikirim')
+                                    ->body('Email berisi e-tiket akan sampai ke alamat pemesan dalam beberapa saat.')
                                     ->success()
                                     ->send();
                             } catch (\Throwable $e) {

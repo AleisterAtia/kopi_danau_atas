@@ -8,6 +8,41 @@ serta **gerbang kualitas (CI)** menggunakan GitHub Actions.
 
 ---
 
+## 0. Persiapan VPS baru (Ubuntu)
+
+Sekali saja per VPS baru, sebelum bagian 1–5 di bawah relevan (bagian itu
+asumsi Docker sudah terpasang). Contoh pakai Ubuntu 22.04/24.04.
+
+```bash
+# 1. Login & update sistem
+ssh root@<ip-vps>
+apt update && apt upgrade -y
+
+# 2. Install Docker Engine + Compose plugin (repo resmi Docker)
+curl -fsSL https://get.docker.com | sh
+apt install -y docker-compose-plugin
+docker compose version   # pastikan terpasang
+
+# 3. Firewall — hanya buka SSH, HTTP, HTTPS
+apt install -y ufw
+ufw allow OpenSSH
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw enable
+
+# 4. Swap file — WAJIB di VPS 1GB RAM, `docker compose build` (npm run build)
+#    gampang OOM tanpa ini (lihat catatan RAM di bagian 5)
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+```
+
+Lanjut ke bagian 5 ("Setup sekali di VPS") untuk clone repo + `docker compose up -d`.
+
+---
+
 ## 1. Arsitektur container
 
 `docker-compose.yml` menjalankan service-service yang mencerminkan kebutuhan

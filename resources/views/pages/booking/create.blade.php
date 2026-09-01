@@ -147,18 +147,18 @@
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">{{ __('Harga / orang') }}</span>
-                                    <span class="font-medium text-gray-900">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                                    <span class="font-medium text-gray-900">{{ \App\Support\Currency::format($package->price) }}</span>
                                 </div>
                             </div>
 
                             <div class="pt-4 border-t border-border">
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="text-sm text-gray-600">{{ __('Subtotal') }}</span>
-                                    <span class="text-sm text-gray-900">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                                    <span class="text-sm text-gray-900">{{ \App\Support\Currency::format($totalPrice) }}</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-base font-bold text-gray-900">{{ __('Total') }}</span>
-                                    <span class="text-2xl font-bold text-primary">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                                    <span class="text-2xl font-bold text-primary">{{ \App\Support\Currency::format($totalPrice) }}</span>
                                 </div>
                             </div>
 

@@ -87,11 +87,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 .navbar--top .nav-link { color: #fff; }
 .navbar--top .nav-link:hover { color: var(--color-accent-warm); }
-.navbar--top .nav-logo { color: #fff; }
 
 .navbar--scrolled .nav-link { color: var(--color-text); }
 .navbar--scrolled .nav-link:hover { color: var(--color-primary); }
-.navbar--scrolled .nav-logo { color: var(--color-primary); }
 
 .nav-link {
     font-weight: 500;

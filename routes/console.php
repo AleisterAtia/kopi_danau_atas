@@ -13,3 +13,6 @@ Schedule::command('bookings:expire-pending')->everyFifteenMinutes();
 
 // Auto-complete bookings whose visit_date has passed (daily at 23:55)
 Schedule::command('bookings:auto-complete')->dailyAt('23:55');
+
+// Refresh the USD/IDR display rate used for English-locale price conversion
+Schedule::command('exchange-rate:refresh')->daily();

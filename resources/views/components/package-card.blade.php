@@ -30,7 +30,7 @@
 
     {{-- Price badge --}}
     <span class="absolute top-4 right-4 rounded-full bg-white/90 backdrop-blur px-3 py-1 text-xs font-bold text-primary shadow-sm">
-        Rp {{ number_format($package->price, 0, ',', '.') }}
+        {{ \App\Support\Currency::format($package->price) }}
     </span>
 
     {{-- Caption --}}

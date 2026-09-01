@@ -4,8 +4,8 @@
         <div class="flex items-center justify-between h-[72px]">
 
             {{-- Logo --}}
-            <a href="{{ route('home') }}" class="nav-logo font-extrabold text-[1.35rem] tracking-tight transition-colors duration-300">
-                Kopi Danau Diatas
+            <a href="{{ route('home') }}" class="flex items-center">
+                <img src="{{ asset('images/logo-navbar.png') }}" alt="CV Kopi Danau Diatas" class="h-10 w-auto">
             </a>
 
             {{-- Desktop nav --}}

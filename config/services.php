@@ -62,4 +62,12 @@ return [
         'token' => env('FONNTE_TOKEN'),
     ],
 
+    // USD/IDR display-only rate for English-locale price conversion (see
+    // App\Support\Currency). Auto-refreshed daily by exchange-rate:refresh;
+    // this fallback is only used before the first successful fetch or if the
+    // rate API is down.
+    'exchange_rate' => [
+        'fallback' => env('EXCHANGE_RATE_FALLBACK', 16000),
+    ],
+
 ];
